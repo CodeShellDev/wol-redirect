@@ -29,7 +29,7 @@
         }
     },
     "records": {
-        "website.mydomain.com": "pve-lxc",
+        "jellyfin.mydomain.com": "pve-lxc",
         "*.mydomain.com": "pve-lxc"
     }
 }
