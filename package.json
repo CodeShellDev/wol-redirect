@@ -1,0 +1,21 @@
+{
+  "name": "wol-redirect",
+  "version": "1.0.0",
+  "description": "A Redirect and WoL Service",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./src/app.js"
+  },
+  "author": "codeshell",
+  "license": "ISC",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "ejs": "^3.1.10",
+    "express": "^4.21.1",
+    "express-session": "^1.18.1",
+    "passport": "^0.7.0",
+    "passport-oauth2": "^1.8.0"
+  }
+}

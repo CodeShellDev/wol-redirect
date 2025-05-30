@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirect Page</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: left;
+      align-self: center;
+      text-align: left;
+      width: 600px;
+    }
+
+    .left-column {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      justify-content: space-between;
+    }
+
+    .bottom-row {
+      padding-top: 30px;
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+
+    .text-row {
+      display: flex;
+      align-items: start;
+      flex-direction: column;
+      gap: 10px;
+      flex-grow: 1;
+    }
+    
+    body {
+      color: white;
+      font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+      background: #1a1919;
+      display: flex;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+      flex-direction: row;
+    }
+
+    .bottom {
+      position: relative;
+      flex-direction: column;
+    }
+
+    .animation {
+      height: 120px;
+      width: 120px;
+      border: 8px solid;
+      border-color: #4b8264 #508a69 #4d765f transparent;
+      border-radius: 50%;
+    }
+
+    .line {
+      position: relative;
+      height: 0px;
+      width: 120px;
+      border: 6px solid;
+      border-color: #8d3434 transparent #8d3434 transparent;
+      border-radius: 50%;
+      transform: translateY(-10px) rotate(-45deg);
+    }
+
+    #hide {
+      opacity: 0;
+    }
+
+    #anim-1 {
+      animation: spin 0.8s ease infinite;
+    }
+    
+    #anim-2 {
+      animation: trans-to-cross 1.5s ease forwards;
+    }
+
+    #anim-3 {
+      opacity: 1;
+      animation: add-line 1s ease 0.5s forwards;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes trans-to-cross {
+      20% {
+        border-left-color: transparent;
+      }
+
+      80% {
+        border-color: #8f3d3d transparent #8f3d3d transparent;
+      }
+
+      100% {
+        height: 0px;
+        border: 6px solid;
+        border-color: #8f3d3d transparent #8f3d3d transparent;
+        transform: rotate(45deg);
+      }
+    }
+
+    @keyframes add-line {
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="left-column">
+      <div>
+        <div class="animation" id="anim-1"></div>
+        <div class="line" id="hide"></div>
+      </div>
+
+      <div class="text-row">
+        <h1 id="title">We are Starting up your Service</h1>
+        <h3 id="subTitle">You will be Redirected shortly</h3>
+      </div>
+    </div>
+    <div class="bottom-row">
+      <h2 id="log"></h2>
+    </div>
+  </div>
+  <script>
+    function changeAnimation(id, newId) {
+      const element = document.getElementById(id)
+      element.id = newId
+    }
+
+    let err = false
+    document.getElementById('log').textContent = ""
+
+    let fetched = false
+    const hideDiv = document.getElementById('hide')
+    const subTitleText = document.getElementById('subTitle')
+    const titleText = document.getElementById('title')
+
+    hideDiv.style.opacity = 0
+    
+    if (!fetched) {
+    fetched = true
+    console.log("Initializing Startup")
+    fetch('/data').then(response => response.json()).then(data => {
+      	document.getElementById('log').textContent = data.log;
+
+      if (data.error) {
+        err = true
+
+        changeAnimation("anim-1", "anim-2")
+        changeAnimation("hide", "anim-3")
+
+        setTimeout(() => {
+          titleText.textContent = "Something went wrong ..."
+          subTitleText.textContent = `${data.host} seems to be unreachable`
+
+          clearInterval(dotAnimId)
+        }, 1000);
+      } else {
+        window.location.href = data.url
+      }
+
+    }).catch(e => console.error('Error fetching data:', e))
+    }
+
+    const baseText = "You will be Redirected shortly"
+    let dotCount = 0
+
+    const dotAnimId = setInterval(() => {
+      dotCount = (dotCount + 1) % 4
+      
+      const dots = '.'.repeat(dotCount)
+
+      subTitleText.textContent = `${baseText} ${dots}`
+    }, 300)
+
+  </script>
+</body>
+</html>

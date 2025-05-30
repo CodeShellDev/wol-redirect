@@ -1,0 +1,35 @@
+{
+    "hosts": {
+        "pve": {
+            "ip": "192.XXX.XXX.1",
+            "mac": "XX:XX:XX:XX",
+            "startupTime": 40
+        },
+        "lxc": {
+           "ip": "192.XXX.XXX.10",
+           "id": "100",
+           "startupTime": 10,
+           "isVirtual": true
+        },
+        "ubuntu-vm": {
+            "ip": "192.XXX.XXX.10",
+            "id": "100",
+            "startupTime": 10,
+            "isVirtual": true
+        }
+    },
+    "routes": {
+        "pve-lxc": {
+            "route": [
+                "pve", "lxc"
+            ],
+            "attributes": {
+                "wakeDocker": true
+            }
+        }
+    },
+    "records": {
+        "website.mydomain.com": "pve-lxc",
+        "*.mydomain.com": "pve-lxc"
+    }
+}
