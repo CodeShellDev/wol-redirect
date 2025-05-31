@@ -141,7 +141,7 @@ http:
 
 If you are trying to wakeup a host running PVE, you will probably want to wakeup LXCs or VMs too.
 Sadly LXCs (and VMs) don't have `Wake-on-LAN` functionalities.
-For that you will need (WoL PVE)[https://github.com/codeshelldev/wol-pve]
+For that you will need [WoL PVE](https://github.com/codeshelldev/wol-pve)
 
 ```json
 {
@@ -178,7 +178,7 @@ For that you will need (WoL PVE)[https://github.com/codeshelldev/wol-pve]
 #### Docker
 
 If you are running docker on your resource-hungry server, you might want to start docker-containers only if needed.
-For this to work you will need (WoL Dockerized)[https://github.com/codeshelldev/wol-dockerized]
+For this to work you will need [WoL Dockerized](https://github.com/codeshelldev/wol-dockerized)
 
 ```json
 {
@@ -242,7 +242,7 @@ For this to work you will need (WoL Dockerized)[https://github.com/codeshelldev/
 }
 ```
 
-_You will need both (WoL PVE)[https://github.com/codeshelldev/wol-pve] and (WoL Dockerized)[https://github.com/codeshelldev/wol-dockerized]_
+_You will need both [WoL PVE](https://github.com/codeshelldev/wol-pve) and [WoL Dockerized](https://github.com/codeshelldev/wol-dockerized)_
 
 ## Usage
 
