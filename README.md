@@ -124,18 +124,18 @@ WoL Redirect will use the `config.json` to get the host of the requested service
 {
 	"hosts": {
 		"pve": {
-			"ip": "192.XXX.XXX.1",
+			"ip": "192.168.1.1",
 			"mac": "XX:XX:XX:XX",
 			"startupTime": 40
 		},
 		"lxc": {
-			"ip": "192.XXX.XXX.10",
+			"ip": "192.168.1.1",
 			"id": "100",
 			"startupTime": 10,
 			"isVirtual": true
 		},
 		"ubuntu-vm": {
-			"ip": "192.XXX.XXX.10",
+			"ip": "192.168.1.1",
 			"id": "100",
 			"startupTime": 10,
 			"isVirtual": true
