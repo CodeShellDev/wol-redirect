@@ -115,17 +115,103 @@ http:
       insecureSkipVerify: true
 ```
 
-## Usage
+### Configuration
 
-Use a Reverse Proxy to redirect you from a service `https://jellyfin.mydomain.com` on another machine to `https://wol-red.mydomain.com`,
-WoL Redirect will use the `config.json` to get the host of the requested service.
+```json
+{
+	"hosts": {
+		"server-1": {
+			"ip": "192.168.1.1",
+			"mac": "XX:XX:XX:XX:XX:XX",
+			"startupTime": 40
+		}
+	},
+	"routes": {
+		"server-1": {
+			"route": ["server-1"]
+		}
+	},
+	"records": {
+		"*.mydomain.com": "server-1"
+	}
+}
+```
+
+#### PVE (VMs + LXCs)
+
+If you are trying to wakeup a host running PVE, you will probably want to wakeup LXCs or VMs too.
+Sadly LXCs (and VMs) don't have `Wake-on-LAN` functionalities.
+For that you will need (WoL PVE)[https://github.com/codeshelldev/wol-pve]
 
 ```json
 {
 	"hosts": {
 		"pve": {
 			"ip": "192.168.1.1",
-			"mac": "XX:XX:XX:XX",
+			"mac": "XX:XX:XX:XX:XX:XX",
+			"startupTime": 40
+		},
+		"lxc": {
+			"ip": "192.168.1.1",
+			"id": "100",
+			"startupTime": 10,
+			"isVirtual": true
+		},
+		"ubuntu-vm": {
+			"ip": "192.168.1.1",
+			"id": "100",
+			"startupTime": 10,
+			"isVirtual": true
+		}
+	},
+	"routes": {
+		"pve-lxc": {
+			"route": ["pve", "lxc"]
+		}
+	},
+	"records": {
+		"*.mydomain.com": "pve-lxc"
+	}
+}
+```
+
+#### Docker
+
+If you are running docker on your resource-hungry server, you might want to start docker-containers only if needed.
+For this to work you will need (WoL Dockerized)[https://github.com/codeshelldev/wol-dockerized]
+
+```json
+{
+	"hosts": {
+		"docker-server": {
+			"ip": "192.168.1.1",
+			"mac": "XX:XX:XX:XX:XX:XX",
+			"startupTime": 10
+		}
+	},
+	"routes": {
+		"docker": {
+			"route": ["docker-server"],
+			"attributes": {
+				"wakeDocker": true
+			}
+		}
+	},
+	"records": {
+		"jellyfin.mydomain.com": "docker",
+		"*.mydomain.com": "docker"
+	}
+}
+```
+
+#### Or both
+
+```json
+{
+	"hosts": {
+		"pve": {
+			"ip": "192.168.1.1",
+			"mac": "XX:XX:XX:XX:XX:XX",
 			"startupTime": 40
 		},
 		"lxc": {
@@ -155,6 +241,13 @@ WoL Redirect will use the `config.json` to get the host of the requested service
 	}
 }
 ```
+
+_You will need both (WoL PVE)[https://github.com/codeshelldev/wol-pve] and (WoL Dockerized)[https://github.com/codeshelldev/wol-dockerized]_
+
+## Usage
+
+Use a Reverse Proxy to redirect you from a service `https://jellyfin.mydomain.com` on another machine to `https://wol-red.mydomain.com`,
+WoL Redirect will use the `config.json` to get the host of the requested service.
 
 ## Contributing
 
