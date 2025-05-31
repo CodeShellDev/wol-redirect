@@ -73,7 +73,7 @@ WoL Redirect will use the `config.json` to get the host of the requested service
 
 Have feedback, new ideas or found a bug? Feel free to open up an issue or to start a Pull Request!
 
-_But remember, that we are all volunteers, so be kind and respectful_
+_But remember we are all volunteers, so be kind and respectful_
 
 ## Supporting
 
