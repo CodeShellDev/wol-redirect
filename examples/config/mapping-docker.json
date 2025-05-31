@@ -1,0 +1,21 @@
+{
+	"hosts": {
+		"docker-server": {
+			"ip": "192.168.1.1",
+			"mac": "XX:XX:XX:XX:XX:XX",
+			"startupTime": 10
+		}
+	},
+	"routes": {
+		"docker": {
+			"route": ["docker-server"],
+			"attributes": {
+				"wakeDocker": true
+			}
+		}
+	},
+	"records": {
+		"jellyfin.mydomain.com": "docker",
+		"*.mydomain.com": "docker"
+	}
+}

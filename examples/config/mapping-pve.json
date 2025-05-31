@@ -2,7 +2,7 @@
 	"hosts": {
 		"pve": {
 			"ip": "192.168.1.1",
-			"mac": "XX:XX:XX:XX",
+			"mac": "XX:XX:XX:XX:XX:XX",
 			"startupTime": 40
 		},
 		"lxc": {
@@ -20,14 +20,10 @@
 	},
 	"routes": {
 		"pve-lxc": {
-			"route": ["pve", "lxc"],
-			"attributes": {
-				"wakeDocker": true
-			}
+			"route": ["pve", "lxc"]
 		}
 	},
 	"records": {
-		"jellyfin.mydomain.com": "pve-lxc",
 		"*.mydomain.com": "pve-lxc"
 	}
 }
