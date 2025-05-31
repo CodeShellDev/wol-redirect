@@ -1,8 +1,3 @@
-.gitignore
-.git
-.github
-.env
-docker-compose.yaml
-LICENSE
-*.md
-node_modules
+!src
+!views
+!package*.json

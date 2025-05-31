@@ -1,0 +1,31 @@
+http:
+  routers:
+    jellyfin:
+      entrypoints:
+        - "websecure"
+      rule: "Host(`jellyfin.mydomain.com`)"
+      tls:
+        certResolver: cloudflare
+      service: jellyfin-failover
+
+  services:
+    jellyfin-failover:
+      failover:
+        service: jellyfin-svc@file
+        fallback: wolred-svc@docker # the name of your wol redirect service
+    jellyfin-svc:
+      loadBalancer:
+        serversTransport: transport
+        healthCheck:
+          # host your jellyfin instance with an additional port 12345, which is used for healthchecks
+          # change this to port 80 / 443 if you are not hosting the docker host on top of PVE with wol-pve
+          port: 12345
+          interval: 5s
+          timeout: 3s
+          scheme: http
+        servers:
+          - url: "https://jellyfin.server2.mydomain.com" # actual url of jellyfin
+
+  serversTransports:
+    transport:
+      insecureSkipVerify: true

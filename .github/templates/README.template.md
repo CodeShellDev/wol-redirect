@@ -3,6 +3,8 @@
 WoL Redirect is a Docker Container with graphical interface, which allows users to wake up their services.
 Integrates with all of the WoL Containers.
 
+_Well, except for meteorite_
+
 ## Installation
 
 Get the latest `docker-compose.yaml` file:
@@ -13,6 +15,20 @@ Get the latest `docker-compose.yaml` file:
 
 ```bash
 docker compose up -d
+```
+
+### Reverse Proxy
+
+In this example we'll be using traefik:
+
+```yaml
+{ { file.examples/traefik.docker-compose.yaml } }
+```
+
+Let's use jellyfin for example
+
+```yaml
+{ { file.examples/jellyfin.yaml } }
 ```
 
 ## Usage
