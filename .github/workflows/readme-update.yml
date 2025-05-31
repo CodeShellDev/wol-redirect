@@ -4,7 +4,6 @@ on:
   push:
     paths:
       - "docker-compose.yaml"
-      - "config/*.json"
       - ".github/templates/README.template.md"
       - "examples/*"
 

@@ -37,6 +37,12 @@ Let's use jellyfin for example
 { { file.examples/config/mapping.json } }
 ```
 
+`.env`
+
+```dotenv
+{ { file.examples/config/config.env } }
+```
+
 #### PVE (VMs + LXCs)
 
 If you are trying to wakeup a host running PVE, you will probably want to wakeup LXCs or VMs too.
