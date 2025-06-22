@@ -137,6 +137,23 @@ http:
 }
 ```
 
+`.env`
+
+```dotenv
+CLIENT_ID=CLIENT_ID
+CLIENT_SECRET=CLIENT_SECRET
+
+# Authentik setup
+AUTH_URL=https://authentication.mydomain.com/application/o/authorize/
+TOKEN_URL=https://authentication.mydomain.com/application/o/token/
+REDIRECT_URL=https://wol-redirect.mydomain.com/auth/callback/
+RESOURCE_URL=https://authentication.mydomain.com/application/o/userinfo/
+LOGOUT_URL=https://authentication.mydomain.com/application/o/wol-red/end-session/
+
+SESSION_KEY=MY_SESSION_KEY # generate this with openssl
+SCOPE=openid
+```
+
 #### PVE (VMs + LXCs)
 
 If you are trying to wakeup a host running PVE, you will probably want to wakeup LXCs or VMs too.
