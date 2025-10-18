@@ -10,7 +10,7 @@ _Well, except for meteorite_
 Get the latest `docker-compose.yaml` file:
 
 ```yaml
-{ { file.docker-compose.yaml } }
+{{{ #://docker-compose.yaml }}}
 ```
 
 ```bash
@@ -22,25 +22,25 @@ docker compose up -d
 In this example we'll be using traefik:
 
 ```yaml
-{ { file.examples/traefik.docker-compose.yaml } }
+{{{ #://examples/traefik.docker-compose.yaml }}}
 ```
 
 Let's use jellyfin for example
 
 ```yaml
-{ { file.examples/jellyfin.yaml } }
+{{{ #://examples/jellyfin.yaml }}}
 ```
 
 ### Configuration
 
 ```json
-{ { file.examples/config/mapping.json } }
+{{{ #://examples/config/mapping.json }}}
 ```
 
 `.env`
 
 ```dotenv
-{ { file.examples/config/config.env } }
+{{{ #://examples/config/config.env }}}
 ```
 
 #### PVE (VMs + LXCs)
@@ -50,7 +50,7 @@ Sadly LXCs (and VMs) don't have `Wake-on-LAN` functionalities.
 For that you will need [WoL PVE](https://github.com/codeshelldev/wol-pve)
 
 ```json
-{ { file.examples/config/mapping-pve.json } }
+{{{ #://examples/config/mapping-pve.json }}}
 ```
 
 #### Docker
@@ -59,13 +59,13 @@ If you are running docker on your resource-hungry server, you might want to star
 For this to work you will need [WoL Dockerized](https://github.com/codeshelldev/wol-dockerized)
 
 ```json
-{ { file.examples/config/mapping-docker.json } }
+{{{ #://examples/config/mapping-docker.json }}}
 ```
 
 #### Or both
 
 ```json
-{ { file.examples/config/mapping-pve-docker.json } }
+{{{ #://examples/config/mapping-pve-docker.json }}}
 ```
 
 _You will need both [WoL PVE](https://github.com/codeshelldev/wol-pve) and [WoL Dockerized](https://github.com/codeshelldev/wol-dockerized)_
