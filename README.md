@@ -95,8 +95,8 @@ http:
   services:
     jellyfin-failover:
       failover:
-        service: jellyfin-svc
-        fallback: wolred-svc # the name of your wol redirect service
+        service: jellyfin-svc@file
+        fallback: wolred-svc@docker # the name of your wol redirect service
     jellyfin-svc:
       loadBalancer:
         serversTransport: transport
