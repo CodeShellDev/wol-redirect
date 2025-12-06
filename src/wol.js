@@ -222,10 +222,7 @@ async function startProcessing(req, res) {
 	}
 
 	return res.json({
-		url: originalUrl,
-		log: output,
-		error: err,
-		host: serviceURL.hostname,
+		test: "HELLO",
 	})
 }
 
