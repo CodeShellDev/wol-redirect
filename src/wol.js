@@ -192,10 +192,6 @@ async function startProcessing(req, res) {
 	let output = ""
 	let err = false
 
-	return res.json({
-		test: "HELLO",
-	})
-
 	const wakeDocker = Boolean(routeAttributes.wakeDocker)
 
 	const wolEnabled = typeof ENV.wolURL === "string" && ENV.wolURL.trim() !== ""
@@ -212,6 +208,10 @@ async function startProcessing(req, res) {
 		err = wolResult.err
 		if (ENV.exposeLogs) output += wolResult.output
 	}
+
+	return res.json({
+		test: "HELLO",
+	})
 
 	if (!err && wakeDocker && woldEnabled) {
 		logger.debug(
