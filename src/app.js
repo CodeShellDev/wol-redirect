@@ -28,12 +28,7 @@ const wol = require("./wol")
 app.use("/", auth)
 
 app.get("/data", async (req, res) => {
-	try {
-		await wol(req, res)
-	} catch (err) {
-		log.logger.error("Unhandled error in /data:", err)
-		res.status(500).send("Internal server error")
-	}
+	await wol(req, res)
 })
 
 app.listen(env.ENV.port, () => {

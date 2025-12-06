@@ -212,10 +212,14 @@ async function startProcessing(req, res) {
 
 			const dockerRes = await post(ENV.woldURL, { query })
 
+			logger.error("After wold")
+
 			if (dockerRes?.output && ENV.exposeLogs) {
 				output += dockerRes.output
 			}
 		}
+
+		logger.debug("Before res.json()")
 
 		return res.json({
 			url: originalUrl,
