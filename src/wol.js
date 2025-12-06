@@ -204,14 +204,16 @@ async function startProcessing(req, res) {
 			? await trySendWakeupPackets(hosts, ENV.wolURL)
 			: null
 
-	if (wolResult) {
-		err = wolResult.err
-		if (ENV.exposeLogs) output += wolResult.output
-	}
+	logger.debug(wolResult)
 
 	return res.json({
 		test: "HELLO",
 	})
+
+	if (wolResult) {
+		err = wolResult.err
+		if (ENV.exposeLogs) output += wolResult.output
+	}
 
 	if (!err && wakeDocker && woldEnabled) {
 		logger.debug(
