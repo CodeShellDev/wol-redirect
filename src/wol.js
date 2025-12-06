@@ -163,7 +163,13 @@ async function startProcessing(req, res) {
 		return res.json({ error: true, log: "Missing serviceUrl cookie" })
 	}
 
-	const serviceURL = new URL(originalUrl)
+	let serviceURL
+	try {
+		serviceURL = new URL(originalUrl)
+	} catch (err) {
+		return res.status(400).json({ error: true, log: "Invalid serviceUrl" })
+	}
+
 	const resolved = getDataByHostname(serviceURL.hostname)
 
 	if (!resolved) {
