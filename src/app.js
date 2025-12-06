@@ -27,13 +27,7 @@ const wol = require("./wol")
 
 app.use("/", auth)
 
-app.get("/data", async (req, res, next) => {
-	try {
-		await wol(req, res)
-	} catch (err) {
-		next(err)
-	}
-})
+app.get("/data", async (req, res) => wol(req, res))
 
 app.use((err, req, res, next) => {
 	log.logger.error(err.message)
