@@ -28,6 +28,12 @@ app.use("/", auth)
 
 app.get("/data", wol)
 
+app.use((err, req, res, next) => {
+	log.logger.error(err.message)
+
+	res.status(500).send("Internal server error")
+})
+
 app.listen(env.ENV.port, () => {
 	log.logger.info(`Server running on Port ${env.ENV.port}`)
 })
