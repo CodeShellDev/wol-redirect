@@ -14,7 +14,7 @@ const redirectURL = new URL(ENV.redirectURL)
 
 async function fetchUserInfo(accessToken) {
 	try {
-		const res = await fetch(ENV.userInfoURL, {
+		const res = await fetch(ENV.resourceURL, {
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
 				Accept: "application/json",
