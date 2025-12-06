@@ -1,4 +1,4 @@
----
+---s
 services:
   wol:
     container_name: wol-client
