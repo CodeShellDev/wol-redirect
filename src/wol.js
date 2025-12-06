@@ -158,19 +158,20 @@ async function trySendWakeupPackets(hosts, wolUrl) {
 	return { output, err }
 }
 
-async function isRealDevice(res) {
-	return !res.headers.get("X-Redirect-Service")
-}
-
 async function waitForHostUp(url, options = {}) {
 	const { interval = 3000, timeout = 60000 } = options
 	const start = Date.now()
 
 	while (Date.now() - start < timeout) {
 		try {
-			const res = await fetch(url)
+			const res = await fetch(url, {
+				method: "GET",
+				headers: {
+					"X-Redirect-Service": 1,
+				},
+			})
 
-			if (res.ok && (await isRealDevice(res))) {
+			if (res.ok && !res.headers.get("X-Redirect-Service")) {
 				return true
 			}
 		} catch {}

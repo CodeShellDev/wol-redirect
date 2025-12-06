@@ -21,6 +21,10 @@ app.set("trust proxy", true)
 app.use((req, res, next) => {
 	res.setHeader("X-Redirect-Service", "1")
 
+	if (req.headers["x-redirect-service"]) {
+		return res.status(200).end()
+	}
+
 	log.logger.info(`${req.method} ${req.path} ${req.query}`)
 	next()
 })
