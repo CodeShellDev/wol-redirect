@@ -287,7 +287,7 @@
 
 					const protocol = location.protocol === "https:" ? "wss" : "ws"
 					const ws = new WebSocket(
-						`${protocol}://${location.host}/ws?requestId=${id}`
+						`${protocol}://${location.host}/ws?requestId=${requestId}`
 					)
 
 					ws.onopen = () => {
