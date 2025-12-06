@@ -19,6 +19,7 @@ app.set("trust proxy", true)
 
 app.use((req, res, next) => {
 	log.logger.info(`${req.method} ${req.path} ${req.query}`)
+	next()
 })
 
 const auth = require("./auth")
@@ -26,7 +27,13 @@ const wol = require("./wol")
 
 app.use("/", auth)
 
-app.get("/data", wol)
+app.get("/data", async (req, res, next) => {
+	try {
+		await startProcessing(req, res)
+	} catch (err) {
+		next(err)
+	}
+})
 
 app.use((err, req, res, next) => {
 	log.logger.error(err.message)
