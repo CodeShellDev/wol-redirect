@@ -285,8 +285,9 @@
 
 					logEl.textContent += "Process started. Waiting for device...\n"
 
+					const protocol = location.protocol === "https:" ? "wss" : "ws"
 					const ws = new WebSocket(
-						`ws://${window.location.host}?requestId=${requestId}`
+						`${protocol}://${location.host}/ws?requestId=${id}`
 					)
 
 					ws.onopen = () => {
