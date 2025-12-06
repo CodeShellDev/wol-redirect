@@ -19,7 +19,6 @@ app.set("trust proxy", true)
 
 app.use((req, res, next) => {
 	log.logger.info(`${req.method} ${req.path} ${req.query}`)
-	next()
 })
 
 const auth = require("./auth")
@@ -28,12 +27,6 @@ const wol = require("./wol")
 app.use("/", auth)
 
 app.get("/data", async (req, res) => wol(req, res))
-
-app.use((err, req, res, next) => {
-	log.logger.error(err.message)
-
-	res.status(500).send("Internal server error")
-})
 
 app.listen(env.ENV.port, () => {
 	log.logger.info(`Server running on Port ${env.ENV.port}`)
