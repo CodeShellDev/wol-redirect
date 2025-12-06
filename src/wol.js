@@ -198,7 +198,6 @@ async function startProcessing(req, res) {
 
 	const query = buildQuery(ENV.queryPattern, context)
 
-	let output = ""
 	let err = false
 
 	const wakeDocker = Boolean(routeAttributes.wakeDocker)
@@ -216,7 +215,17 @@ async function startProcessing(req, res) {
 
 	if (wolResult) {
 		err = wolResult.err
-		if (ENV.exposeLogs) output += wolResult.output
+	}
+
+	const ws = wss.getClient(requestId)
+
+	if (ws && ws.readyState === WebSocket.OPEN) {
+		ws.send(
+			JSON.stringify({
+				error: err,
+				message: wolResult.output,
+			})
+		)
 	}
 
 	if (!err && wakeDocker && woldEnabled) {
@@ -226,18 +235,23 @@ async function startProcessing(req, res) {
 
 		const dockerRes = await post(ENV.woldURL, { query })
 
-		if (dockerRes?.output && ENV.exposeLogs) {
-			output += dockerRes.output
+		if (dockerRes?.output) {
+			if (ws && ws.readyState === WebSocket.OPEN) {
+				ws.send(
+					JSON.stringify({
+						error: err,
+						message: dockerRes.output,
+					})
+				)
+			}
 		}
 	}
-
-	const ws = wss.getClient(requestId)
 
 	if (ws && ws.readyState === WebSocket.OPEN) {
 		ws.send(
 			JSON.stringify({
 				url: originalUrl,
-				message: output,
+				message: "",
 				error: err,
 				host: serviceURL.hostname,
 				requestId,

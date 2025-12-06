@@ -23,6 +23,25 @@ function attach(server, app, router) {
 		socket.on("close", () => {
 			delete clients[requestId]
 		})
+
+		socket.isAlive = true
+
+		socket.on("pong", () => {
+			socket.isAlive = true
+		})
+
+		const interval = setInterval(() => {
+			if (socket.isAlive === false) {
+				socket.terminate()
+				return
+			}
+			socket.isAlive = false
+			socket.ping()
+		}, 15000)
+
+		socket.on("close", () => {
+			clearInterval(interval)
+		})
 	})
 
 	app.use("/", router)
