@@ -1,17 +1,11 @@
-const ws = require("ws")
-const http = require("http")
-const { v4: uuidv4 } = require("uuid")
 const express = require("express")
+const wss = require("./wss")
 
 const { logger } = require("./utils/logger")
 const { ENV } = require("./env")
 const fs = require("fs")
 
 const router = express.Router()
-const server = http.createServer(router)
-const wss = new ws.Server({ server })
-
-const clients = {}
 
 const CONFIG = JSON.parse(fs.readFileSync(ENV.configPath, "utf8"))
 
@@ -187,7 +181,7 @@ async function startProcessing(req, res) {
 		return res.json({ error: true, message: "No route for hostname" })
 	}
 
-	const requestId = uuidv4()
+	const requestId = wss.createRequestId()
 
 	res.json({ error: false, message: "Start request received", requestId })
 
@@ -237,7 +231,7 @@ async function startProcessing(req, res) {
 		}
 	}
 
-	const ws = clients[requestId]
+	const ws = wss.getClient(requestId)
 
 	if (ws && ws.readyState === WebSocket.OPEN) {
 		ws.send(
@@ -252,23 +246,6 @@ async function startProcessing(req, res) {
 	}
 }
 
-wss.on("connection", (ws, req) => {
-	const url = new URL(req.url)
-	const requestId = url.searchParams.get("requestId")
-
-	if (!requestId) {
-		ws.send(JSON.stringify({ error: "Missing requestId" }))
-		ws.close()
-		return
-	}
-
-	clients[requestId] = ws
-
-	ws.on("close", () => {
-		delete clients[requestId]
-	})
-})
-
-router.get("/start", async (res, req) => await startProcessing(req, res))
+router.get("/start", async (req, res) => await startProcessing(req, res))
 
 module.exports = router

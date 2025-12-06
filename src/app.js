@@ -1,6 +1,7 @@
 const express = require("express")
 const log = require("./utils/logger")
 const env = require("./env")
+const http = require("http")
 
 const app = express()
 
@@ -25,10 +26,14 @@ app.use((req, res, next) => {
 const auth = require("./auth")
 const wol = require("./wol")
 
+const wss = require("./wss")
+
 app.use("/", auth)
 
-app.use("/", wol)
+const server = http.createServer(app)
 
-app.listen(env.ENV.port, () => {
+wss.attach(server, app, wol)
+
+server.listen(env.ENV.port, () => {
 	log.logger.info(`Server running on Port ${env.ENV.port}`)
 })
