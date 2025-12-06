@@ -254,7 +254,7 @@
 
 			function handleError({
 				host = "Server",
-				message = "Unable to reach the server",
+				message = "Something went wrong",
 			} = {}) {
 				const titleText = document.getElementById("title")
 				const subTitleText = document.getElementById("subtitle")
@@ -263,7 +263,7 @@
 					changeAnimation("spin", "cross-line")
 					changeAnimation("hide", "add-line")
 
-					titleText.textContent = "Something went wrong"
+					titleText.textContent = message
 					subTitleText.textContent = `${host} seems to be unreachable`
 				}, 1000)
 			}
@@ -273,26 +273,56 @@
 				const subTitleText = document.getElementById("subtitle")
 
 				logEl.textContent = ""
-
-				const baseText = "You will be Redirected shortly"
+				subTitleText.textContent = "Initializing startup..."
 
 				try {
-					console.log("Initializing Startup")
-					const response = await fetch("/data")
+					const response = await fetch("/start")
 					if (!response.ok) throw new Error(`HTTP error ${response.status}`)
 
 					const data = await response.json()
-					logEl.textContent = data.log || ""
+					const requestId = data.requestId
+					if (!requestId) throw new Error("No requestId returned from server")
 
-					if (data.error) {
-						handleError({ host: data.host })
-					} else if (data.url) {
-						window.location.href = data.url
-					} else {
+					logEl.textContent += "Process started. Waiting for device...\n"
+
+					const ws = new WebSocket(
+						`ws://${window.location.host}?requestId=${requestId}`
+					)
+
+					ws.onopen = () => {
+						logEl.textContent += "WebSocket connected.\n"
+					}
+
+					ws.onmessage = (event) => {
+						const msg = JSON.parse(event.data)
+
+						if (msg.message) {
+							logEl.textContent += msg.message + "\n"
+						}
+
+						if (!msg.error && msg.url) {
+							logEl.textContent += "Device is online! Redirecting...\n"
+							ws.close()
+							window.location.href = msg.url
+						}
+
+						if (msg.error) {
+							logEl.textContent += "Error occurred while starting device.\n"
+							ws.close()
+							handleError()
+						}
+					}
+
+					ws.onerror = (err) => {
+						logEl.textContent += "WebSocket connection failed.\n"
 						handleError()
 					}
+
+					ws.onclose = () => {
+						logEl.textContent += "WebSocket closed.\n"
+					}
 				} catch (err) {
-					console.error("Error fetching data:", err)
+					logEl.textContent += "Failed to start process: " + err.message + "\n"
 					handleError()
 				}
 			}

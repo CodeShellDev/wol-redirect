@@ -1,6 +1,17 @@
+const ws = require("ws")
+const http = require("http")
+const { v4: uuidv4 } = require("uuid")
+const express = require("express")
+
 const { logger } = require("./utils/logger")
 const { ENV } = require("./env")
 const fs = require("fs")
+
+const router = express.Router()
+const server = http.createServer(router)
+const wss = new ws.Server({ server })
+
+const clients = {}
 
 const CONFIG = JSON.parse(fs.readFileSync(ENV.configPath, "utf8"))
 
@@ -154,111 +165,110 @@ async function trySendWakeupPackets(hosts, wolUrl) {
 }
 
 async function startProcessing(req, res) {
+	if (!req.isAuthenticated()) {
+		return res.json({ error: true, message: "Unauthorized" })
+	}
+
+	const originalUrl = req.cookies.serviceUrl
+	if (!originalUrl) {
+		return res.json({ error: true, message: "Missing serviceUrl cookie" })
+	}
+
+	let serviceURL
 	try {
-		// --------------------
-		// Authentication check
-		// --------------------
-		if (!req.isAuthenticated()) {
-			return res.json({ error: true, log: "Unauthorized" })
+		serviceURL = new URL(originalUrl)
+	} catch (err) {
+		return res.status(400).json({ error: true, message: "Invalid serviceUrl" })
+	}
+
+	const resolved = getDataByHostname(serviceURL.hostname)
+
+	if (!resolved) {
+		return res.json({ error: true, message: "No route for hostname" })
+	}
+
+	const requestId = uuidv4()
+
+	res.json({ error: false, message: "Start request received", requestId })
+
+	const { hosts, routeAttributes } = resolved
+
+	const context = {
+		HOST: serviceURL.host,
+		HOSTNAME: serviceURL.hostname,
+		PORT: serviceURL.port || "",
+		PROTOCOL: serviceURL.protocol,
+		URL: originalUrl,
+		PATH: serviceURL.pathname,
+	}
+
+	const query = buildQuery(ENV.queryPattern, context)
+
+	let output = ""
+	let err = false
+
+	const wakeDocker = Boolean(routeAttributes.wakeDocker)
+
+	const wolEnabled = typeof ENV.wolURL === "string" && ENV.wolURL.trim() !== ""
+
+	const woldEnabled =
+		typeof ENV.woldURL === "string" && ENV.woldURL.trim() !== ""
+
+	let wolResult = null
+
+	if (wolEnabled && hosts.length > 0) {
+		wolResult = await trySendWakeupPackets(hosts, ENV.wolURL)
+	}
+
+	if (wolResult) {
+		err = wolResult.err
+		if (ENV.exposeLogs) output += wolResult.output
+	}
+
+	if (!err && wakeDocker && woldEnabled) {
+		logger.debug(
+			`Sending WoL-D to ${ENV.woldURL}: ${JSON.stringify({ query })}`
+		)
+
+		const dockerRes = await post(ENV.woldURL, { query })
+
+		if (dockerRes?.output && ENV.exposeLogs) {
+			output += dockerRes.output
 		}
+	}
 
-		// --------------------
-		// Read and validate cookie
-		// --------------------
-		const originalUrl = req.cookies.serviceUrl
-		if (!originalUrl) {
-			return res.json({ error: true, log: "Missing serviceUrl cookie" })
-		}
+	const ws = clients[requestId]
 
-		let serviceURL
-		try {
-			serviceURL = new URL(originalUrl)
-		} catch (err) {
-			return res.status(400).json({ error: true, log: "Invalid serviceUrl" })
-		}
-
-		// --------------------
-		// Resolve route and hosts
-		// --------------------
-		const resolved = getDataByHostname(serviceURL.hostname)
-		if (!resolved) {
-			return res.json({ error: true, log: "No route for hostname" })
-		}
-
-		const { hosts, routeAttributes } = resolved
-
-		const context = {
-			HOST: serviceURL.host,
-			HOSTNAME: serviceURL.hostname,
-			PORT: serviceURL.port || "",
-			PROTOCOL: serviceURL.protocol,
-			URL: originalUrl,
-			PATH: serviceURL.pathname,
-		}
-
-		const query = buildQuery(ENV.queryPattern, context)
-
-		let output = ""
-		let err = false
-
-		const wakeDocker = Boolean(routeAttributes.wakeDocker)
-		const wolEnabled =
-			typeof ENV.wolURL === "string" && ENV.wolURL.trim() !== ""
-		const woldEnabled =
-			typeof ENV.woldURL === "string" && ENV.woldURL.trim() !== ""
-
-		// --------------------
-		// Safe WoL call
-		// --------------------
-		let wolResult = null
-		try {
-			if (wolEnabled && hosts.length > 0) {
-				wolResult = await trySendWakeupPackets(hosts, ENV.wolURL)
-				if (wolResult) {
-					err = wolResult.err
-					if (ENV.exposeLogs) output += wolResult.output
-				}
-			}
-		} catch (wolErr) {
-			logger.error("Error in WoL processing:", wolErr)
-			err = true
-		}
-
-		// --------------------
-		// Safe Docker wakeup
-		// --------------------
-		try {
-			if (!err && wakeDocker && woldEnabled) {
-				logger.debug(
-					`Sending WoL-D to ${ENV.woldURL}: ${JSON.stringify({ query })}`
-				)
-				const dockerRes = await post(ENV.woldURL, { query })
-				if (dockerRes?.output && ENV.exposeLogs) output += dockerRes.output
-			}
-		} catch (dockerErr) {
-			logger.error("Error in Docker WoL processing:", dockerErr)
-			err = true
-		}
-
-		// --------------------
-		// Respond to client safely
-		// --------------------
-		return res.json({
-			url: originalUrl,
-			log: output,
-			error: err,
-			host: serviceURL.hostname,
-		})
-	} catch (fatalErr) {
-		// --------------------
-		// Catch any unexpected error to prevent CF 520
-		// --------------------
-		logger.error("Fatal error in /data endpoint:", fatalErr)
-		return res.status(500).json({
-			error: true,
-			log: "Internal server error",
-		})
+	if (ws && ws.readyState === WebSocket.OPEN) {
+		ws.send(
+			JSON.stringify({
+				url: originalUrl,
+				message: output,
+				error: err,
+				host: serviceURL.hostname,
+				requestId,
+			})
+		)
 	}
 }
 
-module.exports = startProcessing
+wss.on("connection", (ws, req) => {
+	const url = new URL(req.url)
+	const requestId = url.searchParams.get("requestId")
+
+	if (!requestId) {
+		ws.send(JSON.stringify({ error: "Missing requestId" }))
+		ws.close()
+		return
+	}
+
+	clients[requestId] = ws
+
+	ws.on("close", () => {
+		delete clients[requestId]
+	})
+})
+
+router.get("/start", async (res, req) => await startProcessing(req, res))
+
+module.exports = router
