@@ -29,7 +29,7 @@ app.use("/", auth)
 
 app.get("/data", async (req, res, next) => {
 	try {
-		await startProcessing(req, res)
+		await wol(req, res)
 	} catch (err) {
 		next(err)
 	}
