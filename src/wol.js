@@ -154,73 +154,78 @@ async function trySendWakeupPackets(hosts, wolUrl) {
 }
 
 async function startProcessing(req, res) {
-	if (!req.isAuthenticated()) {
-		return res.json({ error: true, log: "Unauthorized" })
-	}
-
-	const originalUrl = req.cookies.serviceUrl
-	if (!originalUrl) {
-		return res.json({ error: true, log: "Missing serviceUrl cookie" })
-	}
-
-	const serviceURL = new URL(originalUrl)
-	const resolved = getDataByHostname(serviceURL.hostname)
-
-	if (!resolved) {
-		return res.json({ error: true, log: "No route for hostname" })
-	}
-
-	const { hosts, routeAttributes } = resolved
-
-	const context = {
-		HOST: serviceURL.host,
-		HOSTNAME: serviceURL.hostname,
-		PORT: serviceURL.port || "",
-		PROTOCOL: serviceURL.protocol,
-		URL: originalUrl,
-		PATH: serviceURL.pathname,
-	}
-
-	const query = buildQuery(ENV.queryPattern, context)
-
-	let output = ""
-	let err = false
-
-	const wakeDocker = Boolean(routeAttributes.wakeDocker)
-
-	const wolEnabled = typeof ENV.wolURL === "string" && ENV.wolURL.trim() !== ""
-
-	const woldEnabled =
-		typeof ENV.woldURL === "string" && ENV.woldURL.trim() !== ""
-
-	const wolResult =
-		wolEnabled && hosts.length > 0
-			? await trySendWakeupPackets(hosts, ENV.wolURL)
-			: null
-
-	if (wolResult) {
-		err = wolResult.err
-		if (ENV.exposeLogs) output += wolResult.output
-	}
-
-	if (!err && wakeDocker && woldEnabled) {
-		logger.debug(
-			`Sending WoL-D to ${ENV.woldURL}: ${JSON.stringify({ query })}`
-		)
-
-		const dockerRes = await post(ENV.woldURL, { query })
-
-		if (dockerRes?.output && ENV.exposeLogs) {
-			output += dockerRes.output
+	try {
+		if (!req.isAuthenticated()) {
+			return res.json({ error: true, log: "Unauthorized" })
 		}
-	}
 
-	return res.json({
-		url: originalUrl,
-		log: output,
-		error: err,
-		host: serviceURL.hostname,
-	})
+		const originalUrl = req.cookies.serviceUrl
+		if (!originalUrl) {
+			return res.json({ error: true, log: "Missing serviceUrl cookie" })
+		}
+
+		const serviceURL = new URL(originalUrl)
+		const resolved = getDataByHostname(serviceURL.hostname)
+
+		if (!resolved) {
+			return res.json({ error: true, log: "No route for hostname" })
+		}
+
+		const { hosts, routeAttributes } = resolved
+
+		const context = {
+			HOST: serviceURL.host,
+			HOSTNAME: serviceURL.hostname,
+			PORT: serviceURL.port || "",
+			PROTOCOL: serviceURL.protocol,
+			URL: originalUrl,
+			PATH: serviceURL.pathname,
+		}
+
+		const query = buildQuery(ENV.queryPattern, context)
+
+		let output = ""
+		let err = false
+
+		const wakeDocker = Boolean(routeAttributes.wakeDocker)
+
+		const wolEnabled =
+			typeof ENV.wolURL === "string" && ENV.wolURL.trim() !== ""
+
+		const woldEnabled =
+			typeof ENV.woldURL === "string" && ENV.woldURL.trim() !== ""
+
+		const wolResult =
+			wolEnabled && hosts.length > 0
+				? await trySendWakeupPackets(hosts, ENV.wolURL)
+				: null
+
+		if (wolResult) {
+			err = wolResult.err
+			if (ENV.exposeLogs) output += wolResult.output
+		}
+
+		if (!err && wakeDocker && woldEnabled) {
+			logger.debug(
+				`Sending WoL-D to ${ENV.woldURL}: ${JSON.stringify({ query })}`
+			)
+
+			const dockerRes = await post(ENV.woldURL, { query })
+
+			if (dockerRes?.output && ENV.exposeLogs) {
+				output += dockerRes.output
+			}
+		}
+
+		return res.json({
+			url: originalUrl,
+			log: output,
+			error: err,
+			host: serviceURL.hostname,
+		})
+	} catch (err) {
+		logger.error(err)
+	}
 }
 
 module.exports = startProcessing
