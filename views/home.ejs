@@ -322,6 +322,7 @@
 						logEl.textContent += "WebSocket closed.\n"
 					}
 				} catch (err) {
+					console.log(err)
 					logEl.textContent += "Failed to start process: " + err.message + "\n"
 					handleError()
 				}
