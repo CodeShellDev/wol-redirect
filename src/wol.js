@@ -204,7 +204,7 @@ async function startProcessing(req, res) {
 			? await trySendWakeupPackets(hosts, ENV.wolURL)
 			: null
 
-	logger.debug(wolResult)
+	logger.debug(JSON.stringify(wolResult))
 
 	return res.json({
 		test: "HELLO",
