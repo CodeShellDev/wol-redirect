@@ -9,7 +9,7 @@ function attach(server, app, router) {
 	wss = new WebSocket.Server({ server })
 
 	wss.on("connection", (socket, req) => {
-		const url = new URL(req.url)
+		const url = new URL(req.url, "http://localhost")
 		const requestId = url.searchParams.get("requestId")
 
 		if (!requestId) {
