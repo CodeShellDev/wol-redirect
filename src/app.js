@@ -26,7 +26,9 @@ const wol = require("./wol")
 
 app.use("/", auth)
 
-app.get("/data", async (req, res) => wol(req, res))
+app.get("/data", async (req, res) => {
+	wol(req, res)
+})
 
 app.listen(env.ENV.port, () => {
 	log.logger.info(`Server running on Port ${env.ENV.port}`)
