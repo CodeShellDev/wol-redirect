@@ -199,10 +199,11 @@ async function startProcessing(req, res) {
 	const woldEnabled =
 		typeof ENV.woldURL === "string" && ENV.woldURL.trim() !== ""
 
-	const wolResult =
-		wolEnabled && hosts.length > 0
-			? await trySendWakeupPackets(hosts, ENV.wolURL)
-			: null
+	let wolResult = null
+
+	if (wolEnabled && hosts.length > 0) {
+		wolResult = await trySendWakeupPackets(hosts, ENV.wolURL)
+	}
 
 	logger.debug(JSON.stringify(wolResult))
 
