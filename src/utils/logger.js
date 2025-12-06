@@ -81,8 +81,10 @@ function Init(logLevel) {
 	if (logLevel) {
 		logger.level = logLevel.toLowerCase()
 	}
+}
 
+function Log() {
 	logger.info(`Initialized Logger with Level of ${logger.level}`)
 }
 
-module.exports = { Init, logger }
+module.exports = { Init, Log, logger }

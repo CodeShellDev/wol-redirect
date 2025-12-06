@@ -8,6 +8,8 @@ logger.Init()
 
 env.Load()
 
+logger.Log()
+
 if (logger.logger.level != env.ENV.logLevel) {
 	logger.Init(env.ENV.logLevel)
 }
