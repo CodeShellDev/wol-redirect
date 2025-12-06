@@ -201,15 +201,13 @@ async function startProcessing(req, res) {
 
 	let wolResult = null
 
-	if (wolEnabled && hosts.length > 0) {
-		wolResult = await trySendWakeupPackets(hosts, ENV.wolURL)
-	}
-
-	logger.debug(JSON.stringify(wolResult))
-
 	return res.json({
 		test: "HELLO",
 	})
+
+	if (wolEnabled && hosts.length > 0) {
+		wolResult = await trySendWakeupPackets(hosts, ENV.wolURL)
+	}
 
 	if (wolResult) {
 		err = wolResult.err
