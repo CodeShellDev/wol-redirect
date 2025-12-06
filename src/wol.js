@@ -158,6 +158,29 @@ async function trySendWakeupPackets(hosts, wolUrl) {
 	return { output, err }
 }
 
+async function waitForHostUp(
+	url,
+	{ interval = 3000, timeout = 60000, okOnly = true } = {}
+) {
+	const start = Date.now()
+
+	while (Date.now() - start < timeout) {
+		try {
+			const res = await fetch(url, { method: "GET" })
+
+			if (okOnly) {
+				if (res.ok) return true
+			} else {
+				return true
+			}
+		} catch (_) {}
+
+		await new Promise((r) => setTimeout(r, interval))
+	}
+
+	return false
+}
+
 async function startProcessing(req, res) {
 	if (!req.isAuthenticated()) {
 		return res.json({ error: true, message: "Unauthorized" })
@@ -219,7 +242,11 @@ async function startProcessing(req, res) {
 
 	const ws = wss.getClient(requestId)
 
-	if (ws && ws.readyState === WebSocket.OPEN) {
+	if (!ws) {
+		return
+	}
+
+	if (ws.readyState === WebSocket.OPEN) {
 		ws.send(
 			JSON.stringify({
 				error: err,
@@ -228,7 +255,14 @@ async function startProcessing(req, res) {
 		)
 	}
 
-	if (!err && wakeDocker && woldEnabled) {
+	if (err) {
+		if (ws.readyState === WebSocket.OPEN) {
+			ws.close()
+		}
+		return
+	}
+
+	if (wakeDocker && woldEnabled) {
 		logger.debug(
 			`Sending WoL-D to ${ENV.woldURL}: ${JSON.stringify({ query })}`
 		)
@@ -247,7 +281,29 @@ async function startProcessing(req, res) {
 		}
 	}
 
-	if (ws && ws.readyState === WebSocket.OPEN) {
+	const isReady = await waitForHostUp(serviceURL)
+
+	if (!isReady) {
+		err = true
+
+		if (ws.readyState === WebSocket.OPEN) {
+			ws.send(
+				JSON.stringify({
+					error: err,
+					message: "Timeout waiting for Service",
+				})
+			)
+		}
+	}
+
+	if (err) {
+		if (ws.readyState === WebSocket.OPEN) {
+			ws.close()
+		}
+		return
+	}
+
+	if (ws.readyState === WebSocket.OPEN) {
 		ws.send(
 			JSON.stringify({
 				url: originalUrl,

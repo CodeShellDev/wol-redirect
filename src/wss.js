@@ -20,10 +20,6 @@ function attach(server, app, router) {
 
 		clients[requestId] = socket
 
-		socket.on("close", () => {
-			delete clients[requestId]
-		})
-
 		socket.isAlive = true
 
 		socket.on("pong", () => {
@@ -41,6 +37,7 @@ function attach(server, app, router) {
 
 		socket.on("close", () => {
 			clearInterval(interval)
+			delete clients[requestId]
 		})
 	})
 
