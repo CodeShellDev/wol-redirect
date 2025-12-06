@@ -19,6 +19,7 @@ app.set("trust proxy", true)
 
 app.use((req, res, next) => {
 	log.logger.info(`${req.method} ${req.path} ${req.query}`)
+	next()
 })
 
 const auth = require("./auth")
@@ -27,7 +28,12 @@ const wol = require("./wol")
 app.use("/", auth)
 
 app.get("/data", async (req, res) => {
-	wol(req, res)
+	try {
+		await wol(req, res)
+	} catch (err) {
+		log.logger.error("Unhandled error in /data:", err)
+		res.status(500).send("Internal server error")
+	}
 })
 
 app.listen(env.ENV.port, () => {
