@@ -204,6 +204,10 @@ async function startProcessing(req, res) {
 	}
 
 	if (!err && wakeDocker && woldEnabled) {
+		logger.debug(
+			`Sending WoL-D to ${ENV.woldURL}: ${JSON.stringify({ query })}`
+		)
+
 		const dockerRes = await post(ENV.woldURL, { query })
 
 		if (dockerRes?.output && ENV.exposeLogs) {
