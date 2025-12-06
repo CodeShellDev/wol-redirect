@@ -6,7 +6,7 @@ const CONFIG = JSON.parse(fs.readFileSync(ENV.configPath, "utf8"))
 
 function buildQuery(pattern, context) {
 	return Object.entries(context).reduce(
-		(query, [key, value]) => query.replaceAll(`{${key}}`, value),
+		(str, [k, v]) => str.replaceAll(`{${k}}`, v),
 		pattern
 	)
 }
@@ -20,7 +20,7 @@ async function post(url, data) {
 		})
 
 		if (!response.ok) {
-			throw new Error(`POST to ${url} returned ${response.status}`)
+			throw new Error(`POST to ${url} returned HTTP ${response.status}`)
 		}
 
 		return await response.json()
@@ -33,44 +33,38 @@ async function post(url, data) {
 function resolveRecord(hostname) {
 	const { records } = CONFIG
 
-	if (records[hostname]) {
-		return { record: records[hostname], wildcard: false }
-	}
-
+	if (records[hostname]) return records[hostname]
 	if (records.any) {
 		logger.debug(`Using wildcard record`)
-		return { record: records.any, wildcard: true }
+		return records.any
 	}
 
 	logger.warn(`No record for hostname: ${hostname}`)
 	return null
 }
 
-function resolveRoute(record) {
-	const routeObj = CONFIG.routes[record]
+function resolveRoute(recordName) {
+	const routeObj = CONFIG.routes?.[recordName]
 
 	if (!routeObj) {
-		logger.warn(`No route for record: ${record}`)
+		logger.warn(`No route for record: ${recordName}`)
 		return null
 	}
-
-	if (!routeObj.route) {
-		logger.warn(`Route missing "route" array: ${record}`)
+	if (!Array.isArray(routeObj.route)) {
+		logger.warn(`Route entry missing 'route' array: ${recordName}`)
 		return null
 	}
 
 	return routeObj
 }
 
-function buildHostEntry(routeItem) {
-	let host = CONFIG.hosts[routeItem]
+function buildHostEntry(key) {
+	let host = CONFIG.hosts?.[key]
 
 	if (!host) {
-		logger.warn(`Host missing: ${routeItem}`)
+		logger.warn(`Host not found: ${key}`)
 
-		if (!CONFIG.hosts.any) {
-			return null
-		}
+		if (!CONFIG.hosts?.any) return null
 
 		logger.debug(`Using wildcard host`)
 		host = CONFIG.hosts.any
@@ -86,10 +80,10 @@ function buildHostEntry(routeItem) {
 }
 
 function getDataByHostname(hostname) {
-	const resolved = resolveRecord(hostname)
-	if (!resolved) return null
+	const record = resolveRecord(hostname)
+	if (!record) return null
 
-	const routeObj = resolveRoute(resolved.record)
+	const routeObj = resolveRoute(record)
 	if (!routeObj) return null
 
 	const hosts = routeObj.route.map(buildHostEntry).filter(Boolean)
@@ -98,6 +92,65 @@ function getDataByHostname(hostname) {
 		hosts,
 		routeAttributes: routeObj.attributes || {},
 	}
+}
+
+async function trySendWakeupPackets(hosts, wolUrl) {
+	if (!hosts?.length) return null
+	if (typeof wolUrl !== "string" || wolUrl.trim() === "") return null
+
+	let output = ""
+	let err = false
+
+	const virtualPort =
+		ENV.virtualPort && `${ENV.virtualPort}`.trim() !== ""
+			? ENV.virtualPort
+			: null
+
+	for (const host of hosts) {
+		const ip = host.ip
+
+		let targetUrl = wolUrl
+		let payload
+
+		if (host.isVirtual) {
+			if (!virtualPort) {
+				continue
+			}
+
+			targetUrl = `http://${ip}:${virtualPort}`
+			payload = {
+				id: host.id,
+				startupTime: host.startupTime,
+			}
+		} else {
+			payload = {
+				ip: host.ip,
+				mac: host.mac,
+				startupTime: host.startupTime,
+			}
+		}
+
+		logger.debug(`Sending WoL to ${targetUrl}: ${JSON.stringify(payload)}`)
+
+		const response = await post(targetUrl, payload)
+		if (!response?.message) {
+			err = true
+			break
+		}
+
+		const msg = response.message
+
+		if (msg.output && !host.isVirtual) {
+			output += msg.output
+		}
+
+		if (msg.success === false) {
+			err = true
+			break
+		}
+	}
+
+	return { output, err }
 }
 
 async function startProcessing(req, res) {
@@ -110,67 +163,60 @@ async function startProcessing(req, res) {
 		return res.json({ error: true, log: "Missing serviceUrl cookie" })
 	}
 
-	const url = new URL(originalUrl)
-	const hostsData = getDataByHostname(url.hostname)
+	const serviceURL = new URL(originalUrl)
+	const resolved = getDataByHostname(serviceURL.hostname)
+
+	if (!resolved) {
+		return res.json({ error: true, log: "No route for hostname" })
+	}
+
+	const { hosts, routeAttributes } = resolved
 
 	const context = {
-		HOST: url.host,
-		HOSTNAME: url.hostname,
-		PORT: url.port || "",
-		PROTOCOL: url.protocol,
+		HOST: serviceURL.host,
+		HOSTNAME: serviceURL.hostname,
+		PORT: serviceURL.port || "",
+		PROTOCOL: serviceURL.protocol,
 		URL: originalUrl,
-		PATH: url.pathname,
+		PATH: serviceURL.pathname,
 	}
 
 	const query = buildQuery(ENV.queryPattern, context)
+
 	let output = ""
 	let err = false
 
-	const hosts = hostsData?.hosts || []
-	const wakeDocker = Boolean(hostsData?.routeAttributes?.wakeDocker)
+	const wakeDocker = Boolean(routeAttributes.wakeDocker)
 
-	let wolPromise = Promise.resolve(null)
+	const wolEnabled = typeof ENV.wolURL === "string" && ENV.wolURL.trim() !== ""
 
-	if (ENV.wolURL && hosts.length > 0) {
-		wolPromise = trySendWakeupPackets(hosts, ENV.wolURL)
+	const woldEnabled =
+		typeof ENV.woldURL === "string" && ENV.woldURL.trim() !== ""
+
+	const wolResult =
+		wolEnabled && hosts.length > 0
+			? await trySendWakeupPackets(hosts, ENV.wolURL)
+			: null
+
+	if (wolResult) {
+		err = wolResult.err
+		if (ENV.exposeLogs) output += wolResult.output
 	}
 
-	wolPromise
-		.then((wol) => {
-			err = wol.err
+	if (!err && wakeDocker && woldEnabled) {
+		const dockerRes = await post(ENV.woldURL, { query })
 
-			if (ENV.exposeLogs) {
-				output += woldRes.output
-			}
+		if (dockerRes?.output && ENV.exposeLogs) {
+			output += dockerRes.output
+		}
+	}
 
-			if (!err && wakeDocker && ENV.woldURL) {
-				return post(ENV.woldURL, { query })
-			}
-
-			return null
-		})
-		.then((woldRes) => {
-			err = wold.err
-
-			if (ENV.exposeLogs) {
-				output += woldRes.output
-			}
-
-			res.json({
-				url: originalUrl,
-				log: output,
-				error: err,
-				host: url.hostname,
-			})
-		})
-		.catch((error) => {
-			logger.error(`Processing error: ${error.message}`)
-			res.json({
-				url: originalUrl,
-				log: "Internal processing error.",
-				error: true,
-			})
-		})
+	return res.json({
+		url: originalUrl,
+		log: output,
+		error: err,
+		host: serviceURL.hostname,
+	})
 }
 
 module.exports = startProcessing
