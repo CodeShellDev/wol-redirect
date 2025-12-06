@@ -192,6 +192,10 @@ async function startProcessing(req, res) {
 	let output = ""
 	let err = false
 
+	return res.json({
+		test: "HELLO",
+	})
+
 	const wakeDocker = Boolean(routeAttributes.wakeDocker)
 
 	const wolEnabled = typeof ENV.wolURL === "string" && ENV.wolURL.trim() !== ""
