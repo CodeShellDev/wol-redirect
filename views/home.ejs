@@ -302,13 +302,13 @@
 						}
 
 						if (!msg.error && msg.url) {
-							logEl.textContent += "Device is online! Redirecting...\n"
+							logEl.textContent += "Service is online! Redirecting...\n"
 							ws.close()
 							window.location.href = msg.url
 						}
 
 						if (msg.error) {
-							logEl.textContent += "Error occurred while starting device.\n"
+							logEl.textContent += "Error occurred while starting service.\n"
 							ws.close()
 							handleError()
 						}

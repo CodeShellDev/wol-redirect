@@ -19,6 +19,8 @@ app.set("view engine", "ejs")
 app.set("trust proxy", true)
 
 app.use((req, res, next) => {
+	res.setHeader("X-Redirect-Service", "1")
+
 	log.logger.info(`${req.method} ${req.path} ${req.query}`)
 	next()
 })

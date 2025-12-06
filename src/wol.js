@@ -158,22 +158,22 @@ async function trySendWakeupPackets(hosts, wolUrl) {
 	return { output, err }
 }
 
-async function waitForHostUp(
-	url,
-	{ interval = 3000, timeout = 60000, okOnly = true } = {}
-) {
+async function isRealDevice(res) {
+	return !res.headers.get("X-Redirect-Service")
+}
+
+async function waitForHostUp(url, options = {}) {
+	const { interval = 3000, timeout = 60000 } = options
 	const start = Date.now()
 
 	while (Date.now() - start < timeout) {
 		try {
-			const res = await fetch(url, { method: "GET" })
+			const res = await fetch(url)
 
-			if (okOnly) {
-				if (res.ok) return true
-			} else {
+			if (res.ok && (await isRealDevice(res))) {
 				return true
 			}
-		} catch (_) {}
+		} catch {}
 
 		await new Promise((r) => setTimeout(r, interval))
 	}
@@ -270,7 +270,7 @@ async function startProcessing(req, res) {
 		const dockerRes = await post(ENV.woldURL, { query })
 
 		if (dockerRes?.output) {
-			if (ws && ws.readyState === WebSocket.OPEN) {
+			if (ws.readyState === WebSocket.OPEN) {
 				ws.send(
 					JSON.stringify({
 						error: err,
@@ -290,7 +290,7 @@ async function startProcessing(req, res) {
 			ws.send(
 				JSON.stringify({
 					error: err,
-					message: "Timeout waiting for Service",
+					message: "Timeout waiting for service",
 				})
 			)
 		}
