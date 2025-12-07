@@ -14,6 +14,10 @@ async function post(url, data) {
 
 		return response
 	} catch (err) {
+		if (!err.cause) {
+			err.cause = ""
+		}
+
 		logger.error(
 			`POST error: ${err.message}; cause: ${JSON.stringify(err.cause)}`
 		)
