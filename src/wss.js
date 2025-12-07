@@ -1,6 +1,7 @@
 const WebSocket = require("ws")
 const { v4: uuidv4 } = require("uuid")
 
+const waiters = new Map()
 const clients = {}
 
 let wss = null
@@ -19,6 +20,11 @@ function attach(server, app, router) {
 		}
 
 		clients[clientID] = socket
+
+		if (waiters.has(clientID)) {
+			waiters.get(clientID)(socket)
+			waiters.delete(clientID)
+		}
 
 		socket.isAlive = true
 
@@ -44,6 +50,22 @@ function attach(server, app, router) {
 	app.use("/", router)
 }
 
+function waitForClient(clientID, timeout = 5000) {
+	return new Promise((resolve, reject) => {
+		const existing = clients[clientID]
+		if (existing) return resolve(existing)
+
+		waiters.set(clientID, resolve)
+
+		setTimeout(() => {
+			if (waiters.has(clientID)) {
+				waiters.delete(clientID)
+				reject(new Error("WebSocket connection timeout"))
+			}
+		}, timeout)
+	})
+}
+
 function getClient(clientID) {
 	return clients[clientID]
 }
@@ -52,4 +74,4 @@ function createClientID() {
 	return uuidv4()
 }
 
-module.exports = { attach, getClient, createClientID }
+module.exports = { attach, getClient, waitForClient, createClientID }
