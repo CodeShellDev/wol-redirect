@@ -137,7 +137,9 @@ async function trySendWakeupPackets(hosts, wolUrl) {
 			}
 		}
 
-		logger.debug(`Sending WoL to ${targetUrl}: ${JSON.stringify(payload)}`)
+		logger.debug(
+			`Sending WoL packets to ${targetUrl}: ${JSON.stringify(payload)}`
+		)
 
 		const response = await post(targetUrl, payload)
 		if (!response?.message) {
@@ -249,25 +251,18 @@ async function startProcessing(req, res) {
 		return
 	}
 
-	if (ws.readyState === WebSocket.OPEN) {
-		ws.send(
-			JSON.stringify({
-				error: err,
-				message: wolResult.output,
-			})
-		)
-	}
+	sendToClient(ws, {
+		error: err,
+		message: wolResult.output,
+	})
 
-	if (err) {
-		if (ws.readyState === WebSocket.OPEN) {
-			ws.close()
-		}
-		return
-	}
+	errorClient(ws, err)
 
 	if (wakeDocker && woldEnabled) {
 		logger.debug(
-			`Sending WoL-D to ${ENV.woldURL}: ${JSON.stringify({ query })}`
+			`Sending WoL-Dockerized packets to ${ENV.woldURL}: ${JSON.stringify({
+				query,
+			})}`
 		)
 
 		const dockerRes = await post(ENV.woldURL, { query })
@@ -289,34 +284,39 @@ async function startProcessing(req, res) {
 	if (!isReady) {
 		err = true
 
-		if (ws.readyState === WebSocket.OPEN) {
-			ws.send(
-				JSON.stringify({
-					error: err,
-					message: "Timeout waiting for service",
-				})
-			)
-		}
+		sendToClient(ws, {
+			error: err,
+			message: "Timeout waiting for service",
+		})
 	}
 
+	errorClient(ws, err)
+
+	sendToClient(ws, {
+		url: originalUrl,
+		message: "",
+		error: err,
+		host: serviceURL.hostname,
+		requestId,
+	})
+}
+
+function sendToClient(ws, data) {
+	if (ws.readyState === WebSocket.OPEN) {
+		ws.send(JSON.stringify(data))
+		return true
+	}
+	return false
+}
+
+function errorClient(ws, err) {
 	if (err) {
 		if (ws.readyState === WebSocket.OPEN) {
 			ws.close()
 		}
-		return
+		return true
 	}
-
-	if (ws.readyState === WebSocket.OPEN) {
-		ws.send(
-			JSON.stringify({
-				url: originalUrl,
-				message: "",
-				error: err,
-				host: serviceURL.hostname,
-				requestId,
-			})
-		)
-	}
+	return false
 }
 
 router.get("/start", async (req, res) => await startProcessing(req, res))
