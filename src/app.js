@@ -25,7 +25,9 @@ app.use((req, res, next) => {
 		return res.status(200).end()
 	}
 
-	log.logger.info(`${req.method} ${req.path} ${req.query}`)
+	url = new URL(req.url)
+
+	log.logger.info(`${req.method} ${url.pathname} ${url.search}`)
 	next()
 })
 
