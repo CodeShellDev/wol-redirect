@@ -173,6 +173,8 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 			})
 		})
 
+		logger.debug("Finished promise: " + hostResult)
+
 		if (!hostResult.success) {
 			err = true
 			break
