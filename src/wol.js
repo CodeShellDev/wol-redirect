@@ -153,6 +153,7 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 		const hostClientId = data.client_id
 
 		const wsURL = `${protocol}://${baseURL.host}/ws?client_id=${hostClientId}`
+		logger.debug("url: ", wsURL)
 		const ws = new WebSocket(wsURL)
 
 		let finished = false
