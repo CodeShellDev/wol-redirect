@@ -90,7 +90,9 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 
 	let err = false
 
-	const baseURL = new URL(wolUrl)
+	logger.debug("Starting wakeup call")
+	const baseURL = URL.parse(wolUrl)
+	logger.debug("base: ", baseURL.toString())
 	const protocol = baseURL.protocol === "https:" ? "wss" : "ws"
 
 	const virtualPort =
