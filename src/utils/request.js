@@ -1,3 +1,5 @@
+const logger = require("./logger")
+
 async function post(url, data) {
 	try {
 		const response = await fetch(url, {
