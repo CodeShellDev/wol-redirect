@@ -1,4 +1,4 @@
-const logger = require("./logger")
+const logger = require("./logger").logger
 
 async function post(url, data) {
 	try {
