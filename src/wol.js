@@ -110,14 +110,11 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 		)
 
 		const response = await request.post(targetUrl, payload)
-
 		let data = null
 		if (response) {
 			try {
 				data = await response.json()
-			} catch {
-				data = null
-			}
+			} catch {}
 		}
 
 		if (!data?.client_id) {
@@ -131,6 +128,11 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 
 		const wsURL = `${protocol}://${baseURL.host}/ws?client_id=${data.client_id}`
 		const ws = new WebSocket(wsURL)
+
+		await new Promise((resolve, reject) => {
+			ws.once("open", resolve)
+			ws.once("error", () => resolve())
+		})
 
 		const hostResult = await new Promise((resolve) => {
 			let finished = false
@@ -173,7 +175,7 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 
 		if (!hostResult.success) {
 			err = true
-			break // Stop processing further hosts
+			break
 		}
 	}
 
