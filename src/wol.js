@@ -30,7 +30,9 @@ async function post(url, data) {
 
 		return await response.json()
 	} catch (err) {
-		logger.error(`POST error: ${err.message}`)
+		logger.error(
+			`POST error: ${err.message}; cause: ${JSON.stringify(err.cause)}`
+		)
 		return null
 	}
 }
