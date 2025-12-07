@@ -1,8 +1,10 @@
 const express = require("express")
 const wss = require("./wss")
+
 const WebSocket = require("ws")
 
 const { logger } = require("./utils/logger")
+const request = require("./utils/request")
 const { ENV } = require("./env")
 const fs = require("fs")
 
@@ -15,27 +17,6 @@ function buildQuery(pattern, context) {
 		(str, [k, v]) => str.replaceAll(`{${k}}`, v),
 		pattern
 	)
-}
-
-async function post(url, data) {
-	try {
-		const response = await fetch(url, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(data),
-		})
-
-		if (!response.ok) {
-			throw new Error(`POST to ${url} returned HTTP ${response.status}`)
-		}
-
-		return await response.json()
-	} catch (err) {
-		logger.error(
-			`POST error: ${err.message}; cause: ${JSON.stringify(err.cause)}`
-		)
-		return null
-	}
 }
 
 function resolveRecord(hostname) {
@@ -141,8 +122,19 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 			`Sending WoL packets to ${targetUrl}: ${JSON.stringify(payload)}`
 		)
 
-		const response = await post(targetUrl, payload)
-		if (!response?.client_id) {
+		const response = await request.post(targetUrl, payload)
+
+		let data = null
+
+		if (response) {
+			try {
+				data = await response.json()
+			} catch {
+				data = null
+			}
+		}
+
+		if (!data?.client_id) {
 			err = true
 
 			sendToClient(client, {
@@ -226,23 +218,25 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 
 	return { err }
 }
+
 async function waitForHostUp(url, options = {}) {
 	const { interval = 3000, timeout = 60000 } = options
 	const start = Date.now()
 
 	while (Date.now() - start < timeout) {
-		try {
-			const res = await fetch(url, {
-				method: "GET",
-				headers: {
-					"X-Redirect-Service": 1,
-				},
-			})
+		const res = await request.get(url, {
+			headers: {
+				"X-Redirect-Service": 1,
+			},
+		})
 
-			if (res.ok && !res.headers.get("X-Redirect-Service")) {
-				return true
-			}
-		} catch {}
+		if (res == null) {
+			continue
+		}
+
+		if (res.ok && !res.headers.get("X-Redirect-Service")) {
+			return true
+		}
 
 		await new Promise((r) => setTimeout(r, interval))
 	}
@@ -328,9 +322,11 @@ async function startProcessing(req, res) {
 			})}`
 		)
 
-		const dockerRes = await post(ENV.woldURL, { query: query })
+		const dockerRes = await request.post(ENV.woldURL, { query: query })
 
-		if (dockerRes?.output) {
+		const data = await request.json()
+
+		if (data?.output) {
 			sendToClient(ws, {
 				error: err,
 				message: dockerRes.output,
