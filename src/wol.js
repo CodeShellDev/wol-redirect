@@ -134,7 +134,7 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 			}
 		}
 
-		logger.debug("got: ", data)
+		logger.debug("got: " + JSON.stringify(data))
 
 		if (!data?.client_id) {
 			err = true
@@ -153,7 +153,7 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 		const hostClientId = data.client_id
 
 		const wsURL = `${protocol}://${baseURL.host}/ws?client_id=${hostClientId}`
-		logger.debug("url: ", wsURL)
+		logger.debug("url: " + wsURL)
 		const ws = new WebSocket(wsURL)
 
 		let finished = false
