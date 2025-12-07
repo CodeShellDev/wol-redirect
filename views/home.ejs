@@ -283,7 +283,7 @@
 					const requestId = data.requestId
 					if (!requestId) throw new Error("No requestId returned from server")
 
-					logEl.textContent += "Process started. Waiting for device...\n"
+					logEl.textContent += "Process started. Waiting for service...\n"
 
 					const protocol = location.protocol === "https:" ? "wss" : "ws"
 					const ws = new WebSocket(
