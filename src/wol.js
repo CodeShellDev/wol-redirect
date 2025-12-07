@@ -7,6 +7,7 @@ const { logger } = require("./utils/logger")
 const request = require("./utils/request")
 const { ENV } = require("./env")
 const fs = require("fs")
+const { url } = require("inspector")
 
 const router = express.Router()
 
@@ -133,6 +134,8 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 				data = null
 			}
 		}
+
+		logger.debug("Received " + data + " from " + url)
 
 		if (!data?.client_id) {
 			err = true
