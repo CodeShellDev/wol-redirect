@@ -324,7 +324,7 @@ async function startProcessing(req, res) {
 
 		const dockerRes = await request.post(ENV.woldURL, { query: query })
 
-		const data = await request.json()
+		const data = await dockerRes.json()
 
 		if (data?.output) {
 			sendToClient(ws, {
