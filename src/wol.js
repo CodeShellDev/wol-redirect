@@ -152,8 +152,6 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 					message: parsed.message || "",
 				})
 
-				logger.debug("Received " + JSON.stringify(parsed))
-
 				if (parsed.success) {
 					finished = true
 
@@ -168,12 +166,10 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 			})
 
 			ws.on("close", () => {
-				logger.debug("Closing...")
 				if (!finished) resolve({ success: false })
 			})
 
 			ws.on("error", () => {
-				logger.debug("Error during ws!")
 				if (!finished) resolve({ success: false })
 			})
 		})
