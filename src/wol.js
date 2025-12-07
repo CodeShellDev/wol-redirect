@@ -134,6 +134,8 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 			}
 		}
 
+		logger.debug("got: ", data)
+
 		if (!data?.client_id) {
 			err = true
 
