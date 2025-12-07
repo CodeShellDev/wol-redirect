@@ -215,34 +215,14 @@ async function startProcessing(req, res) {
 
 	const { hosts, routeAttributes } = resolved
 
-	const context = {
-		HOST: serviceURL.host,
-		HOSTNAME: serviceURL.hostname,
-		PORT: serviceURL.port || "",
-		PROTOCOL: serviceURL.protocol,
-		URL: originalUrl,
-		PATH: serviceURL.pathname,
-	}
-
-	const query = buildQuery(ENV.queryPattern, context)
-
 	let err = false
 
-	const wakeDocker = Boolean(routeAttributes.wakeDocker)
-
 	const wolEnabled = typeof ENV.wolURL === "string" && ENV.wolURL.trim() !== ""
-
-	const woldEnabled =
-		typeof ENV.woldURL === "string" && ENV.woldURL.trim() !== ""
 
 	let wolResult = null
 
 	if (wolEnabled && hosts.length > 0) {
 		wolResult = await trySendWakeupPackets(hosts, ENV.wolURL)
-	}
-
-	if (wolResult) {
-		err = wolResult.err
 	}
 
 	const ws = wss.getClient(requestId)
@@ -251,31 +231,49 @@ async function startProcessing(req, res) {
 		return
 	}
 
-	sendToClient(ws, {
-		error: err,
-		message: wolResult.output,
-	})
+	if (wolResult) {
+		err = wolResult.err
+
+		sendToClient(ws, {
+			error: err,
+			message: wolResult.output,
+		})
+	}
 
 	errorClient(ws, err)
 
+	const wakeDocker = Boolean(routeAttributes.wakeDocker)
+
+	const woldEnabled =
+		typeof ENV.woldURL === "string" && ENV.woldURL.trim() !== ""
+
 	if (wakeDocker && woldEnabled) {
+		const context = {
+			HOST: serviceURL.host,
+			HOSTNAME: serviceURL.hostname,
+			PORT: serviceURL.port || "",
+			PROTOCOL: serviceURL.protocol,
+			URL: originalUrl,
+			PATH: serviceURL.pathname,
+		}
+
+		const queryPattern = routeAttributes.queryPattern || ENV.woldQueryPattern
+
+		const query = buildQuery(queryPattern, context)
+
 		logger.debug(
 			`Sending WoL-Dockerized packets to ${ENV.woldURL}: ${JSON.stringify({
-				query,
+				query: query,
 			})}`
 		)
 
-		const dockerRes = await post(ENV.woldURL, { query })
+		const dockerRes = await post(ENV.woldURL, { query: query })
 
 		if (dockerRes?.output) {
-			if (ws.readyState === WebSocket.OPEN) {
-				ws.send(
-					JSON.stringify({
-						error: err,
-						message: dockerRes.output,
-					})
-				)
-			}
+			sendToClient(ws, {
+				error: err,
+				message: dockerRes.output,
+			})
 		}
 	}
 

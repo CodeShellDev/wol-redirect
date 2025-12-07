@@ -8,7 +8,7 @@ const ENV = {
 	logLevel: "info",
 	exposeLogs: false,
 
-	queryPattern: "",
+	woldQueryPattern: "",
 	wolURL: null,
 	woldURL: null,
 	virtualPort: "",
@@ -39,11 +39,11 @@ function Load() {
 	ENV.port = process.env.PORT || ENV.port
 	ENV.logLevel = process.env.LOG_LEVEL || ENV.logLevel
 
-	ENV.queryPattern = process.env.QUERY_PATTERN
+	ENV.woldQueryPattern = process.env.WOLD_QUERY_PATTERN
 
 	ENV.exposeLogs = process.env.EXPOSE_LOGS || ENV.exposeLogs
 
-	if (ENV.queryPattern == "") {
+	if (ENV.woldQueryPattern == "") {
 		logger.fatal(`Query pattern is empty`)
 	}
 
