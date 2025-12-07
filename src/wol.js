@@ -7,7 +7,6 @@ const { logger } = require("./utils/logger")
 const request = require("./utils/request")
 const { ENV } = require("./env")
 const fs = require("fs")
-const { url } = require("inspector")
 
 const router = express.Router()
 
@@ -148,32 +147,36 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 				}
 
 				sendToClient(client, {
+					success: false,
 					error: parsed.error || false,
 					message: parsed.message || "",
-					host: host.ip,
 				})
+
+				logger.debug("Received " + JSON.stringify(parsed))
 
 				if (parsed.success) {
 					finished = true
+
 					ws.close()
 					resolve({ success: true })
 				} else if (parsed.error) {
 					finished = true
+
 					ws.close()
 					resolve({ success: false })
 				}
 			})
 
 			ws.on("close", () => {
+				logger.debug("Closing...")
 				if (!finished) resolve({ success: false })
 			})
 
 			ws.on("error", () => {
+				logger.debug("Error during ws!")
 				if (!finished) resolve({ success: false })
 			})
 		})
-
-		logger.debug("Finished promise: " + hostResult)
 
 		if (!hostResult.success) {
 			err = true
