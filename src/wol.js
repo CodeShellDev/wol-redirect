@@ -175,7 +175,7 @@ async function waitForHostUp(url, options = {}) {
 
 			const data = res.headers
 
-			console.log(header)
+			logger.debug(data)
 
 			if (res.ok && !res.headers.get("X-Redirect-Service")) {
 				return true
