@@ -173,10 +173,6 @@ async function waitForHostUp(url, options = {}) {
 				},
 			})
 
-			const data = res.headers
-
-			logger.debug(data)
-
 			if (res.ok && !res.headers.get("X-Redirect-Service")) {
 				return true
 			}
