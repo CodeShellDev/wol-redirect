@@ -280,14 +280,14 @@
 					if (!response.ok) throw new Error(`HTTP error ${response.status}`)
 
 					const data = await response.json()
-					const requestId = data.requestId
-					if (!requestId) throw new Error("No requestId returned from server")
+					const clientID = data.client_id
+					if (!clientID) throw new Error("No requestId returned from server")
 
 					logEl.textContent += "Process started. Waiting for service...\n"
 
 					const protocol = location.protocol === "https:" ? "wss" : "ws"
 					const ws = new WebSocket(
-						`${protocol}://${location.host}/ws?requestId=${requestId}`
+						`${protocol}://${location.host}/ws?client_id=${clientID}`
 					)
 
 					ws.onopen = () => {

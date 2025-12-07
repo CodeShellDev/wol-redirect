@@ -10,15 +10,15 @@ function attach(server, app, router) {
 
 	wss.on("connection", (socket, req) => {
 		const url = new URL(req.url, "http://localhost")
-		const requestId = url.searchParams.get("requestId")
+		const clientID = url.searchParams.get("client_id")
 
-		if (!requestId) {
-			socket.send(JSON.stringify({ error: true, message: "Missing requestId" }))
+		if (!clientID) {
+			socket.send(JSON.stringify({ error: true, message: "Missing client_id" }))
 			socket.close()
 			return
 		}
 
-		clients[requestId] = socket
+		clients[clientID] = socket
 
 		socket.isAlive = true
 
@@ -37,19 +37,19 @@ function attach(server, app, router) {
 
 		socket.on("close", () => {
 			clearInterval(interval)
-			delete clients[requestId]
+			delete clients[clientID]
 		})
 	})
 
 	app.use("/", router)
 }
 
-function getClient(requestId) {
-	return clients[requestId]
+function getClient(clientID) {
+	return clients[clientID]
 }
 
-function createRequestId() {
+function createClientID() {
 	return uuidv4()
 }
 
-module.exports = { attach, getClient, createRequestId }
+module.exports = { attach, getClient, createClientID }

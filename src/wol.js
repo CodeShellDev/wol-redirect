@@ -1,5 +1,6 @@
 const express = require("express")
 const wss = require("./wss")
+const WebSocket = require("ws")
 
 const { logger } = require("./utils/logger")
 const { ENV } = require("./env")
@@ -101,12 +102,15 @@ function getDataByHostname(hostname) {
 	}
 }
 
-async function trySendWakeupPackets(hosts, wolUrl) {
-	if (!hosts?.length) return null
-	if (typeof wolUrl !== "string" || wolUrl.trim() === "") return null
+async function trySendWakeupPackets(client, hosts, wolUrl) {
+	if (!hosts?.length) return { err: true }
+	if (!client) return { err: true }
+	if (!wolUrl) return { err: true }
 
-	let output = ""
 	let err = false
+
+	const baseURL = new URL(wolUrl)
+	const protocol = baseURL.protocol === "https:" ? "wss" : "ws"
 
 	const virtualPort =
 		ENV.virtualPort && `${ENV.virtualPort}`.trim() !== ""
@@ -114,17 +118,13 @@ async function trySendWakeupPackets(hosts, wolUrl) {
 			: null
 
 	for (const host of hosts) {
-		const ip = host.ip
-
 		let targetUrl = wolUrl
 		let payload
 
 		if (host.isVirtual) {
-			if (!virtualPort) {
-				continue
-			}
+			if (!virtualPort) continue
 
-			targetUrl = `http://${ip}:${virtualPort}`
+			targetUrl = `http://${host.ip}:${virtualPort}`
 			payload = {
 				id: host.id,
 				startupTime: host.startupTime,
@@ -142,26 +142,90 @@ async function trySendWakeupPackets(hosts, wolUrl) {
 		)
 
 		const response = await post(targetUrl, payload)
-		if (!response?.message) {
+		if (!response?.client_id) {
 			err = true
+
+			sendToClient(client, {
+				success: false,
+				error: true,
+				message: `WoL request failed`,
+			})
+
+			errorClient(client, err)
+
 			break
 		}
 
-		const msg = response.message
+		const hostClientId = response.client_id
 
-		if (msg.output && !host.isVirtual) {
-			output += msg.output
-		}
+		const wsURL = `${protocol}://${baseURL.host}/ws?client_id=${hostClientId}`
+		const ws = new WebSocket(wsURL)
 
-		if (msg.success === false) {
+		let finished = false
+
+		ws.on("message", (msg) => {
+			let data
+			try {
+				data = JSON.parse(msg)
+			} catch {
+				return
+			}
+
+			if (data.error === true) {
+				err = true
+			}
+
+			sendToClient(client, {
+				success: false,
+				error: err,
+				message: data.message,
+			})
+
+			errorClient(client, err)
+
+			if (data.success === true) {
+				finished = true
+				ws.close()
+			} else if (err) {
+				ws.close()
+			}
+		})
+
+		ws.on("close", () => {
+			if (!finished && !err) {
+				err = true
+
+				sendToClient(client, {
+					error: true,
+					message: `WoL WebSocket closed unexpectedly`,
+				})
+
+				errorClient(client, err)
+			}
+		})
+
+		ws.on("error", () => {
 			err = true
-			break
-		}
+
+			logger.error("Error during WebSocket connection: ", err.message)
+
+			sendToClient(client, {
+				success: false,
+				error: true,
+				message: `WoL WebSocket error for host`,
+			})
+		})
+
+		await new Promise((resolve) => {
+			ws.on("close", resolve)
+			ws.on("error", resolve)
+		})
+
+		if (err) break
 	}
 
-	return { output, err }
+	return { err }
 }
-
 async function waitForHostUp(url, options = {}) {
 	const { interval = 3000, timeout = 60000 } = options
 	const start = Date.now()
@@ -209,9 +273,11 @@ async function startProcessing(req, res) {
 		return res.json({ error: true, message: "No route for hostname" })
 	}
 
-	const requestId = wss.createRequestId()
+	const clientID = wss.createClientID()
 
-	res.json({ error: false, message: "Start request received", requestId })
+	res.json({
+		client_id: clientID,
+	})
 
 	const { hosts, routeAttributes } = resolved
 
@@ -221,23 +287,18 @@ async function startProcessing(req, res) {
 
 	let wolResult = null
 
-	if (wolEnabled && hosts.length > 0) {
-		wolResult = await trySendWakeupPackets(hosts, ENV.wolURL)
-	}
-
-	const ws = wss.getClient(requestId)
+	const ws = wss.getClient(clientID)
 
 	if (!ws) {
 		return
 	}
 
+	if (wolEnabled && hosts.length > 0) {
+		wolResult = await trySendWakeupPackets(ws, hosts, ENV.wolURL)
+	}
+
 	if (wolResult) {
 		err = wolResult.err
-
-		sendToClient(ws, {
-			error: err,
-			message: wolResult.output,
-		})
 	}
 
 	errorClient(ws, err)
@@ -295,7 +356,6 @@ async function startProcessing(req, res) {
 		message: "",
 		error: err,
 		host: serviceURL.hostname,
-		requestId,
 	})
 }
 
