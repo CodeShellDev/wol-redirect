@@ -120,7 +120,7 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 			sendToClient(client, {
 				success: false,
 				error: true,
-				message: `WoL request failed for host ${host.ip}`,
+				message: `WoL request failed for host`,
 			})
 			return { err: true }
 		}
