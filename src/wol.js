@@ -85,19 +85,13 @@ function getDataByHostname(hostname) {
 }
 
 async function trySendWakeupPackets(client, hosts, wolUrl) {
-	if (!hosts?.length) return { err: true }
-	if (!client) return { err: true }
-	if (!wolUrl) return { err: true }
+	if (!hosts?.length || !client || !wolUrl) return { err: true }
+
+	const baseURL = new URL(wolUrl)
+	const protocol = baseURL.protocol === "https:" ? "wss" : "ws"
+	const virtualPort = ENV.virtualPort?.trim() || null
 
 	let err = false
-
-	const baseURL = URL.parse(wolUrl)
-	const protocol = baseURL.protocol === "https:" ? "wss" : "ws"
-
-	const virtualPort =
-		ENV.virtualPort && `${ENV.virtualPort}`.trim() !== ""
-			? ENV.virtualPort
-			: null
 
 	for (const host of hosts) {
 		let targetUrl = wolUrl
@@ -105,18 +99,10 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 
 		if (host.isVirtual) {
 			if (!virtualPort) continue
-
 			targetUrl = `http://${host.ip}:${virtualPort}`
-			payload = {
-				id: host.id,
-				startupTime: host.startupTime,
-			}
+			payload = { id: host.id, startupTime: host.startupTime }
 		} else {
-			payload = {
-				ip: host.ip,
-				mac: host.mac,
-				startupTime: host.startupTime,
-			}
+			payload = { ip: host.ip, mac: host.mac, startupTime: host.startupTime }
 		}
 
 		logger.debug(
@@ -126,7 +112,6 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 		const response = await request.post(targetUrl, payload)
 
 		let data = null
-
 		if (response) {
 			try {
 				data = await response.json()
@@ -135,88 +120,61 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 			}
 		}
 
-		logger.debug("Received " + data + " from " + url)
-
 		if (!data?.client_id) {
-			err = true
-
 			sendToClient(client, {
 				success: false,
 				error: true,
-				message: `WoL request failed`,
+				message: `WoL request failed for host ${host.ip}`,
 			})
-
-			errorClient(client, err)
-
-			break
+			return { err: true }
 		}
 
-		const hostClientId = data.client_id
-
-		const wsURL = `${protocol}://${baseURL.host}/ws?client_id=${hostClientId}`
+		const wsURL = `${protocol}://${baseURL.host}/ws?client_id=${data.client_id}`
 		const ws = new WebSocket(wsURL)
 
-		let finished = false
+		const hostResult = await new Promise((resolve) => {
+			let finished = false
 
-		ws.on("message", (msg) => {
-			let data
-			try {
-				data = JSON.parse(msg)
-			} catch {
-				return
-			}
+			ws.on("message", (msg) => {
+				if (finished) return
 
-			if (data.error === true) {
-				err = true
-			}
-
-			sendToClient(client, {
-				success: false,
-				error: err,
-				message: data.message,
-			})
-
-			errorClient(client, err)
-
-			if (data.success === true) {
-				finished = true
-				ws.close()
-			} else if (err) {
-				ws.close()
-			}
-		})
-
-		ws.on("close", () => {
-			if (!finished && !err) {
-				err = true
+				let parsed
+				try {
+					parsed = JSON.parse(msg)
+				} catch {
+					return
+				}
 
 				sendToClient(client, {
-					error: true,
-					message: `WoL WebSocket closed unexpectedly`,
+					error: parsed.error || false,
+					message: parsed.message || "",
+					host: host.ip,
 				})
 
-				errorClient(client, err)
-			}
-		})
+				if (parsed.success) {
+					finished = true
+					ws.close()
+					resolve({ success: true })
+				} else if (parsed.error) {
+					finished = true
+					ws.close()
+					resolve({ success: false })
+				}
+			})
 
-		ws.on("error", () => {
-			err = true
+			ws.on("close", () => {
+				if (!finished) resolve({ success: false })
+			})
 
-			logger.error("Error during WebSocket connection: ", err.message)
-
-			sendToClient(client, {
-				success: false,
-				error: true,
-				message: `WoL WebSocket error for host`,
+			ws.on("error", () => {
+				if (!finished) resolve({ success: false })
 			})
 		})
 
-		await new Promise((resolve) => {
-			ws.on("close", resolve)
-			ws.on("error", resolve)
-		})
-
-		if (err) break
+		if (!hostResult.success) {
+			err = true
+			break // Stop processing further hosts
+		}
 	}
 
 	return { err }
