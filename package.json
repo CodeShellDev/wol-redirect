@@ -1,6 +1,6 @@
 {
 	"name": "wol-redirect",
-	"version": "1.0.0",
+	"version": "none",
 	"description": "A Redirect and WoL Service",
 	"main": "app.js",
 	"scripts": {
