@@ -64,7 +64,6 @@ function buildHostEntry(key) {
 		mac: host.mac,
 		id: host.id,
 		startupTime: host.startupTime,
-		isVirtual: Boolean(host.isVirtual),
 	}
 }
 
@@ -83,7 +82,7 @@ function getDataByHostname(hostname) {
 	}
 }
 
-async function trySendWakeupPackets(client, hosts, wolUrl) {
+async function trySendWoLPackets(client, hosts, wolUrl) {
 	if (!hosts?.length || !client || !wolUrl) return { err: true }
 
 	const baseURL = new URL(wolUrl)
@@ -96,7 +95,7 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 		let targetUrl = wolUrl
 		let payload
 
-		if (host.isVirtual) {
+		if (host.id) {
 			if (!virtualPort) continue
 			targetUrl = `http://${host.ip}:${virtualPort}`
 			payload = { id: host.id, startupTime: host.startupTime }
@@ -183,6 +182,84 @@ async function trySendWakeupPackets(client, hosts, wolUrl) {
 	return { err }
 }
 
+async function trySendWoLDPackets(client, context, targetUrl, queryPattern) {
+	const query = buildQuery(queryPattern, context)
+
+	logger.debug(
+		`Sending WoLD packets to ${targetUrl}: ${JSON.stringify({
+			query: query,
+		})}`
+	)
+
+	const response = await request.post(targetUrl, payload)
+	let data = null
+	if (response) {
+		try {
+			data = await response.json()
+		} catch {}
+	}
+
+	if (!data?.client_id) {
+		sendToClient(client, {
+			success: false,
+			error: true,
+			message: `WoLD request failed for host`,
+		})
+		return { err: true }
+	}
+
+	const wsURL = `${protocol}://${baseURL.host}/ws?client_id=${data.client_id}`
+	const ws = new WebSocket(wsURL)
+
+	await new Promise((resolve, reject) => {
+		ws.once("open", resolve)
+		ws.once("error", () => resolve())
+	})
+
+	const woldResult = await new Promise((resolve) => {
+		let finished = false
+
+		ws.on("message", (msg) => {
+			if (finished) return
+
+			let parsed
+			try {
+				parsed = JSON.parse(msg)
+			} catch {
+				return
+			}
+
+			sendToClient(client, {
+				success: false,
+				error: parsed.error || false,
+				message: parsed.message || "",
+			})
+
+			if (parsed.success) {
+				finished = true
+
+				ws.close()
+				resolve({ success: true })
+			} else if (parsed.error) {
+				finished = true
+
+				ws.close()
+				resolve({ success: false })
+			}
+		})
+
+		ws.on("close", () => {
+			if (!finished) resolve({ success: false })
+		})
+
+		ws.on("error", () => {
+			if (!finished) resolve({ success: false })
+		})
+	})
+
+	return { err: woldResult.success }
+}
+
 async function waitForHostUp(url, options = {}) {
 	const { interval = 3000, timeout = 60000 } = options
 	const start = Date.now()
@@ -252,7 +329,7 @@ async function startProcessing(req, res) {
 	}
 
 	if (wolEnabled && hosts.length > 0) {
-		wolResult = await trySendWakeupPackets(ws, hosts, ENV.wolURL)
+		wolResult = await trySendWoLPackets(ws, hosts, ENV.wolURL)
 	}
 
 	if (wolResult) {
@@ -261,41 +338,30 @@ async function startProcessing(req, res) {
 
 	errorClient(ws, err)
 
-	const wakeDocker = Boolean(routeAttributes.wakeDocker)
+	const woldUrl = routeAttributes?.wold?.url || ENV.woldURL
 
-	const woldEnabled =
-		typeof ENV.woldURL === "string" && ENV.woldURL.trim() !== ""
+	let woldResult = null
 
-	if (wakeDocker && woldEnabled) {
-		const context = {
-			HOST: serviceURL.host,
-			HOSTNAME: serviceURL.hostname,
-			PORT: serviceURL.port || "",
-			PROTOCOL: serviceURL.protocol,
-			URL: originalUrl,
-			PATH: serviceURL.pathname,
-		}
+	if (wakeDocker && woldUrl.trim() !== "") {
+		const queryPattern =
+			routeAttributes?.wold?.queryPattern || ENV.woldQueryPattern
 
-		const queryPattern = routeAttributes.queryPattern || ENV.woldQueryPattern
-
-		const query = buildQuery(queryPattern, context)
-
-		logger.debug(
-			`Sending WoL-Dockerized packets to ${ENV.woldURL}: ${JSON.stringify({
-				query: query,
-			})}`
+		woldResult = await trySendWoLDPackets(
+			ws,
+			{
+				HOST: serviceURL.host,
+				HOSTNAME: serviceURL.hostname,
+				PORT: serviceURL.port || "",
+				PROTOCOL: serviceURL.protocol,
+				PATH: serviceURL.pathname,
+			},
+			woldUrl,
+			queryPattern
 		)
+	}
 
-		const dockerRes = await request.post(ENV.woldURL, { query: query })
-
-		const data = await dockerRes.json()
-
-		if (data?.output) {
-			sendToClient(ws, {
-				error: err,
-				message: dockerRes.output,
-			})
-		}
+	if (woldResult) {
+		err = woldResult.err
 	}
 
 	const isReady = await waitForHostUp(serviceURL)
