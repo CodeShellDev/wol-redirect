@@ -281,7 +281,7 @@
 
 					const data = await response.json()
 					const clientID = data.client_id
-					if (!clientID) throw new Error("No requestId returned from server")
+					if (!clientID) throw new Error("No client_id returned from server")
 
 					logEl.textContent += "Process started. Waiting for service...\n"
 
