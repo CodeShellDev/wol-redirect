@@ -189,6 +189,14 @@ async function trySendWoLPackets(client, hosts) {
 		}
 
 		const targetUrl = data.url
+		const targetURL = URL.parse(targetUrl)
+
+		if (!targetURL) {
+			logger.error("Could not parse target url: ", host)
+			err = true
+			break
+		}
+
 		const payload = data.payload
 
 		logger.debug(
@@ -212,7 +220,8 @@ async function trySendWoLPackets(client, hosts) {
 			return { err: true }
 		}
 
-		const wsURL = `${protocol}://${baseURL.host}/ws?client_id=${responseData.client_id}`
+		const wsProtocol = targetURL.protocol === "https:" ? "wss" : "ws"
+		const wsURL = `${wsProtocol}://${targetURL.host}/ws?client_id=${responseData.client_id}`
 		const ws = new WebSocket(wsURL)
 
 		await new Promise((resolve, reject) => {
