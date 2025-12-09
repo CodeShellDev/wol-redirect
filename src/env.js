@@ -6,7 +6,7 @@ const ENV = {
 	configPath: "config/mapping.json",
 	port: "6789",
 	logLevel: "info",
-	exposeLogs: false,
+	exposeLogs: true,
 
 	woldQueryPattern: "",
 	wolURL: "",

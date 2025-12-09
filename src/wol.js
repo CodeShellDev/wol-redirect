@@ -207,7 +207,7 @@ async function trySendWoLPackets(client, hosts) {
 			sendToClient(client, {
 				success: false,
 				error: true,
-				message: `WoL request failed for host`,
+				message: ENV.exposeLogs ? `wakeup request failed for host` : "",
 			})
 			return { err: true }
 		}
@@ -236,7 +236,7 @@ async function trySendWoLPackets(client, hosts) {
 				sendToClient(client, {
 					success: false,
 					error: parsed.error || false,
-					message: parsed.message || "",
+					message: ENV.exposeLogs ? parsed.message || "" : "",
 				})
 
 				if (parsed.success) {
@@ -297,25 +297,37 @@ async function waitForHostUp(url, options = {}) {
 
 async function startProcessing(req, res) {
 	if (!req.isAuthenticated()) {
-		return res.json({ error: true, message: "Unauthorized" })
+		return res.json({
+			error: true,
+			message: ENV.exposeLogs ? "Unauthorized" : "",
+		})
 	}
 
 	const originalUrl = req.cookies.serviceUrl
 	if (!originalUrl) {
-		return res.json({ error: true, message: "Missing serviceUrl cookie" })
+		return res.json({
+			error: true,
+			message: ENV.exposeLogs ? "Missing serviceUrl cookie" : "",
+		})
 	}
 
 	let serviceURL
 	try {
 		serviceURL = new URL(originalUrl)
 	} catch (err) {
-		return res.status(400).json({ error: true, message: "Invalid serviceUrl" })
+		return res.status(400).json({
+			error: true,
+			message: ENV.exposeLogs ? "Invalid serviceUrl" : "",
+		})
 	}
 
 	const resolved = getDataByHostname(serviceURL.hostname)
 
 	if (!resolved) {
-		return res.json({ error: true, message: "No route for hostname" })
+		return res.json({
+			error: true,
+			message: ENV.exposeLogs ? "No route for hostname" : "",
+		})
 	}
 
 	const clientID = wss.createClientID()
@@ -355,7 +367,7 @@ async function startProcessing(req, res) {
 
 		sendToClient(ws, {
 			error: err,
-			message: "Timeout waiting for service",
+			message: ENV.exposeLogs ? "Timeout waiting for service" : "",
 		})
 	}
 
