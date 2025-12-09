@@ -112,7 +112,7 @@ function getDataFromHost(host) {
 	switch (type) {
 		case HostType.PHYSICAL:
 			const wolUrl = host.url || ENV.wolURL
-			const wolURL = URL.parse(woldUrl)
+			const wolURL = URL.parse(wolUrl)
 
 			if (!wolURL) {
 				return null
@@ -130,7 +130,7 @@ function getDataFromHost(host) {
 		case HostType.VIRTUAL:
 			const virtualUrl = host.url || `http://${host.ip}:${ENV.virtualPort}/wake`
 
-			const virtualURL = URL.parse(woldUrl)
+			const virtualURL = URL.parse(virtualUrl)
 
 			if (!virtualURL) {
 				return null
