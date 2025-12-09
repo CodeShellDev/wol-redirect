@@ -338,13 +338,16 @@ async function startProcessing(req, res) {
 
 	errorClient(ws, err)
 
-	const woldUrl = routeAttributes?.wold?.url || ENV.woldURL
-
 	let woldResult = null
 
-	if (wakeDocker && woldUrl.trim() !== "") {
-		const queryPattern =
-			routeAttributes?.wold?.queryPattern || ENV.woldQueryPattern
+	const wold = routeAttributes?.wold
+	const woldEnabled =
+		wold === true || (typeof wold === "object" && wold !== null)
+
+	const woldUrl = (routeAttributes?.wold?.url || ENV.woldURL).trim()
+
+	if (woldEnabled && woldUrl !== "") {
+		const queryPattern = (wold?.queryPattern || ENV.woldQueryPattern).trim()
 
 		woldResult = await trySendWoLDPackets(
 			ws,
