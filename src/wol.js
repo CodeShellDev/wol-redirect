@@ -336,7 +336,7 @@ async function startProcessing(req, res) {
 		return
 	}
 
-	if (hosts.length > 0) {
+	if (hosts.length <= 0) {
 		err = true
 		errorClient(ws, err)
 		return
