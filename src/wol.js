@@ -12,6 +12,12 @@ const router = express.Router()
 
 const CONFIG = JSON.parse(fs.readFileSync(ENV.configPath, "utf8"))
 
+const HostType = {
+	PHYSICAL: "physical",
+	VIRTUAL: "virtual",
+	DOCKER: "docker",
+}
+
 function buildQuery(pattern, context) {
 	return Object.entries(context).reduce(
 		(str, [k, v]) => str.replaceAll(`{${k}}`, v),
@@ -63,6 +69,7 @@ function buildHostEntry(key) {
 		ip: host.ip,
 		mac: host.mac,
 		id: host.id,
+		wold: host.wold,
 		startupTime: host.startupTime,
 	}
 }
@@ -82,40 +89,121 @@ function getDataByHostname(hostname) {
 	}
 }
 
-async function trySendWoLPackets(client, hosts, wolUrl) {
-	if (!hosts?.length || !client || !wolUrl) return { err: true }
+function getHostType(host) {
+	let type = HostType.PHYSICAL
 
-	const baseURL = new URL(wolUrl)
-	const protocol = baseURL.protocol === "https:" ? "wss" : "ws"
-	const virtualPort = ENV.virtualPort?.trim() || null
+	if (host?.id !== null && typeof host?.id === "string") {
+		type = HostType.VIRTUAL
+	} else if (
+		host?.docker !== null &&
+		(host?.docker == true || typeof host?.docker === "object")
+	) {
+		type = HostType.DOCKER
+	} else if (host?.mac && host?.ip) {
+		type = HostType.PHYSICAL
+	}
+
+	return type
+}
+
+function getDataFromHost(host) {
+	const type = getHostType(host)
+
+	switch (type) {
+		case HostType.PHYSICAL:
+			const wolUrl = host.url || ENV.wolURL
+			const wolURL = URL.parse(woldUrl)
+
+			if (!wolURL) {
+				return null
+			}
+
+			return {
+				url: wolUrl,
+				payload: {
+					addr: host.addr,
+					ip: host.ip,
+					mac: host.mac,
+					startupTime: host.startupTime,
+				},
+			}
+		case HostType.VIRTUAL:
+			const virtualUrl = host.url || `http://${host.ip}:${ENV.virtualPort}/wake`
+
+			const virtualURL = URL.parse(woldUrl)
+
+			if (!virtualURL) {
+				return null
+			}
+
+			return {
+				url: virtualUrl,
+				payload: {
+					id: host.id,
+					startupTime: host.startupTime,
+				},
+			}
+		case HostType.DOCKER:
+			const woldUrl = host.url || `http://${host.ip}:${ENV.woldPort}/wake`
+
+			const woldURL = URL.parse(woldUrl)
+
+			if (!woldURL) {
+				return null
+			}
+
+			const queryPattern = host.docker.queryPattern || ENV.woldQueryPattern
+			const context = {
+				HOST: woldURL.host,
+				HOSTNAME: woldURL.hostname,
+				PORT: woldURL.port || "",
+				PROTOCOL: woldURL.protocol,
+				PATH: woldURL.pathname,
+			}
+
+			const query = buildQuery(queryPattern, context)
+
+			return {
+				url: woldUrl,
+				payload: {
+					query: query,
+				},
+			}
+	}
+
+	return null
+}
+
+async function trySendWoLPackets(client, hosts) {
+	if (!hosts?.length || !client) return { err: true }
 
 	let err = false
 
 	for (const host of hosts) {
-		let targetUrl = wolUrl
-		let payload
+		const data = getDataFromHost(host)
 
-		if (host.id) {
-			if (!virtualPort) continue
-			targetUrl = `http://${host.ip}:${virtualPort}`
-			payload = { id: host.id, startupTime: host.startupTime }
-		} else {
-			payload = { ip: host.ip, mac: host.mac, startupTime: host.startupTime }
+		if (data === null) {
+			logger.error("Could not parse host: ", host)
+			err = true
+			break
 		}
 
+		const targetUrl = data.url
+		const payload = data.payload
+
 		logger.debug(
-			`Sending WoL packets to ${targetUrl}: ${JSON.stringify(payload)}`
+			`Sending WoL request to ${targetUrl}: ${JSON.stringify(payload)}`
 		)
 
 		const response = await request.post(targetUrl, payload)
-		let data = null
+		let responseData = null
 		if (response) {
 			try {
-				data = await response.json()
+				responseData = await response.json()
 			} catch {}
 		}
 
-		if (!data?.client_id) {
+		if (!responseData?.client_id) {
 			sendToClient(client, {
 				success: false,
 				error: true,
@@ -124,7 +212,7 @@ async function trySendWoLPackets(client, hosts, wolUrl) {
 			return { err: true }
 		}
 
-		const wsURL = `${protocol}://${baseURL.host}/ws?client_id=${data.client_id}`
+		const wsURL = `${protocol}://${baseURL.host}/ws?client_id=${responseData.client_id}`
 		const ws = new WebSocket(wsURL)
 
 		await new Promise((resolve, reject) => {
@@ -180,84 +268,6 @@ async function trySendWoLPackets(client, hosts, wolUrl) {
 	}
 
 	return { err }
-}
-
-async function trySendWoLDPackets(client, context, targetUrl, queryPattern) {
-	const query = buildQuery(queryPattern, context)
-
-	logger.debug(
-		`Sending WoLD packets to ${targetUrl}: ${JSON.stringify({
-			query: query,
-		})}`
-	)
-
-	const response = await request.post(targetUrl, payload)
-	let data = null
-	if (response) {
-		try {
-			data = await response.json()
-		} catch {}
-	}
-
-	if (!data?.client_id) {
-		sendToClient(client, {
-			success: false,
-			error: true,
-			message: `WoLD request failed for host`,
-		})
-		return { err: true }
-	}
-
-	const wsURL = `${protocol}://${baseURL.host}/ws?client_id=${data.client_id}`
-	const ws = new WebSocket(wsURL)
-
-	await new Promise((resolve, reject) => {
-		ws.once("open", resolve)
-		ws.once("error", () => resolve())
-	})
-
-	const woldResult = await new Promise((resolve) => {
-		let finished = false
-
-		ws.on("message", (msg) => {
-			if (finished) return
-
-			let parsed
-			try {
-				parsed = JSON.parse(msg)
-			} catch {
-				return
-			}
-
-			sendToClient(client, {
-				success: false,
-				error: parsed.error || false,
-				message: parsed.message || "",
-			})
-
-			if (parsed.success) {
-				finished = true
-
-				ws.close()
-				resolve({ success: true })
-			} else if (parsed.error) {
-				finished = true
-
-				ws.close()
-				resolve({ success: false })
-			}
-		})
-
-		ws.on("close", () => {
-			if (!finished) resolve({ success: false })
-		})
-
-		ws.on("error", () => {
-			if (!finished) resolve({ success: false })
-		})
-	})
-
-	return { err: woldResult.success }
 }
 
 async function waitForHostUp(url, options = {}) {
@@ -318,8 +328,6 @@ async function startProcessing(req, res) {
 
 	let err = false
 
-	const wolEnabled = typeof ENV.wolURL === "string" && ENV.wolURL.trim() !== ""
-
 	let wolResult = null
 
 	const ws = await wss.waitForClient(clientID)
@@ -328,44 +336,17 @@ async function startProcessing(req, res) {
 		return
 	}
 
-	if (wolEnabled && hosts.length > 0) {
-		wolResult = await trySendWoLPackets(ws, hosts, ENV.wolURL)
+	if (hosts.length > 0) {
+		err = true
+		errorClient(ws, err)
+		return
 	}
 
-	if (wolResult) {
-		err = wolResult.err
-	}
+	wolResult = await trySendWoLPackets(ws, hosts, ENV.wolURL)
+
+	err = wolResult.err
 
 	errorClient(ws, err)
-
-	let woldResult = null
-
-	const wold = routeAttributes?.wold
-	const woldEnabled =
-		wold === true || (typeof wold === "object" && wold !== null)
-
-	const woldUrl = (routeAttributes?.wold?.url || ENV.woldURL).trim()
-
-	if (woldEnabled && woldUrl !== "") {
-		const queryPattern = (wold?.queryPattern || ENV.woldQueryPattern).trim()
-
-		woldResult = await trySendWoLDPackets(
-			ws,
-			{
-				HOST: serviceURL.host,
-				HOSTNAME: serviceURL.hostname,
-				PORT: serviceURL.port || "",
-				PROTOCOL: serviceURL.protocol,
-				PATH: serviceURL.pathname,
-			},
-			woldUrl,
-			queryPattern
-		)
-	}
-
-	if (woldResult) {
-		err = woldResult.err
-	}
 
 	const isReady = await waitForHostUp(serviceURL)
 

@@ -9,9 +9,10 @@ const ENV = {
 	exposeLogs: false,
 
 	woldQueryPattern: "",
-	wolURL: null,
-	woldURL: null,
-	virtualPort: "",
+	wolURL: "",
+
+	woldPort: "7777",
+	virtualPort: "9000",
 
 	sessionKey: "",
 	cookieKey: "",
@@ -39,26 +40,17 @@ function Load() {
 	ENV.port = process.env.PORT || ENV.port
 	ENV.logLevel = process.env.LOG_LEVEL || ENV.logLevel
 
-	ENV.woldQueryPattern = process.env.WOLD_QUERY_PATTERN
+	ENV.woldQueryPattern = process.env.WOLD_QUERY_PATTERN || ""
 
 	ENV.exposeLogs = process.env.EXPOSE_LOGS || ENV.exposeLogs
 
-	if (ENV.woldQueryPattern == "") {
-		logger.fatal(`Query pattern is empty`)
-	}
-
 	ENV.wolURL = process.env.WOL_URL || ""
-	ENV.woldURL = process.env.WOLD_URL || ""
-	ENV.virtualPort = process.env.VIRTUAL_PORT || ""
+
+	ENV.woldPort = process.env.WOLD_PORT || ENV.woldPort
+	ENV.virtualPort = process.env.VIRTUAL_PORT || ENV.virtualPort
 
 	if (!ENV.wolURL) {
 		logger.warn("No WoL URL set")
-	}
-	if (!ENV.woldURL) {
-		logger.warn("No WoL docker URL set")
-	}
-	if (!ENV.virtualPort) {
-		logger.warn("No virtual port set")
 	}
 
 	ENV.sessionKey = process.env.SESSION_KEY || ""
