@@ -100,7 +100,7 @@ function getHostType(host) {
 	return type
 }
 
-function getDataFromHost(host) {
+function getDataFromHost(host, serviceUrl) {
 	const type = getHostType(host)
 
 	switch (type) {
@@ -147,13 +147,19 @@ function getDataFromHost(host) {
 				return null
 			}
 
+			const serviceURL = URL.parse(serviceUrl)
+
+			if (!serviceURL) {
+				return null
+			}
+
 			const queryPattern = host.docker.queryPattern || ENV.woldQueryPattern
 			const context = {
-				HOST: woldURL.host,
-				HOSTNAME: woldURL.hostname,
-				PORT: woldURL.port || "",
-				PROTOCOL: woldURL.protocol,
-				PATH: woldURL.pathname,
+				HOST: serviceURL.host,
+				HOSTNAME: serviceURL.hostname,
+				PORT: serviceURL.port || "",
+				PROTOCOL: serviceURL.protocol,
+				PATH: serviceURL.pathname,
 			}
 
 			const query = buildQuery(queryPattern, context)
@@ -169,13 +175,13 @@ function getDataFromHost(host) {
 	return null
 }
 
-async function trySendWoLPackets(client, hosts) {
+async function trySendWoLPackets(client, hosts, serviceUrl) {
 	if (!hosts?.length || !client) return { err: true }
 
 	let err = false
 
 	for (const host of hosts) {
-		const data = getDataFromHost(host)
+		const data = getDataFromHost(host, serviceUrl)
 
 		if (data === null) {
 			logger.error("Could not parse host: ", host)
