@@ -364,7 +364,7 @@ async function startProcessing(req, res) {
 		return
 	}
 
-	wolResult = await trySendWoLPackets(ws, hosts, ENV.wolURL)
+	wolResult = await trySendWoLPackets(ws, hosts, originalUrl)
 
 	err = wolResult.err
 
