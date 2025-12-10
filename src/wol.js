@@ -65,13 +65,7 @@ function buildHostEntry(key) {
 		host = CONFIG.hosts.any
 	}
 
-	return {
-		ip: host.ip,
-		mac: host.mac,
-		id: host.id,
-		wold: host.wold,
-		startupTime: host.startupTime,
-	}
+	return host
 }
 
 function getDataByHostname(hostname) {
