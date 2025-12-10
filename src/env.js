@@ -12,7 +12,7 @@ const ENV = {
 	wolURL: "",
 
 	woldPort: "7777",
-	virtualPort: "9000",
+	vePort: "9999",
 
 	sessionKey: "",
 	cookieKey: "",
@@ -47,7 +47,7 @@ function Load() {
 	ENV.wolURL = process.env.WOL_URL || ""
 
 	ENV.woldPort = process.env.WOLD_PORT || ENV.woldPort
-	ENV.virtualPort = process.env.VIRTUAL_PORT || ENV.virtualPort
+	ENV.vePort = process.env.VIRTUAL_PORT || ENV.vePort
 
 	if (!ENV.wolURL) {
 		logger.warn("No WoL URL set")

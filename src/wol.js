@@ -128,7 +128,7 @@ function getDataFromHost(host) {
 				},
 			}
 		case HostType.VIRTUAL:
-			const virtualUrl = host.url || `http://${host.ip}:${ENV.virtualPort}/wake`
+			const virtualUrl = host.url || `http://${host.ip}:${ENV.vePort}/wake`
 
 			const virtualURL = URL.parse(virtualUrl)
 
