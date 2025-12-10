@@ -140,7 +140,7 @@ function getDataFromHost(host) {
 				url: virtualUrl,
 				payload: {
 					id: host.id,
-					virtIP: host.ip,
+					ip: host.virtIP,
 					startupTime: host.startupTime,
 				},
 			}
