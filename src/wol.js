@@ -210,7 +210,7 @@ async function trySendWoLPackets(client, hosts) {
 			sendToClient(client, {
 				success: false,
 				error: true,
-				message: ENV.exposeLogs ? `wakeup request failed for host` : "",
+				message: ENV.exposeLogs ? `Wakeup request failed for host` : "",
 			})
 			return { err: true }
 		}
