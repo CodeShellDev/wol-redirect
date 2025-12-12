@@ -54,7 +54,7 @@ body {
 	align-items: center;
 	text-align: center;
 
-	width: 100%;
+	width: 90%;
 	max-width: 600px;
 
 	padding: 40px 30px;
@@ -97,8 +97,8 @@ body {
 }
 
 .spinner {
-	height: 120px;
-	width: 120px;
+	height: clamp(80px, 14vmin, 120px);
+	aspect-ratio: 1 / 1;
 	border: 8px solid;
 	border-color: var(--spinner-color) var(--spinner-color) var(--spinner-color)
 		var(--spinner-color-transparent);

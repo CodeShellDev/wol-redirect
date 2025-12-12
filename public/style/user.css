@@ -25,8 +25,8 @@
 	border-radius: 360px;
 	aspect-ratio: 1 / 1;
 
-	height: clamp(40px, 6vmin, 60px);
-	font-size: clamp(20px, 6vmin / 2, 30px);
+	height: clamp(50px, 6vmin, 60px);
+	font-size: clamp(25px, 6vmin / 2, 30px);
 
 	font-weight: bold;
 }
