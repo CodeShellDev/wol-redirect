@@ -6,8 +6,10 @@ const redis = require("redis")
 let redisClient
 
 async function Init() {
+	const password = encodeURIComponent(ENV.redisPassword)
+
 	redisClient = redis.createClient({
-		url: `redis://${ENV.redisUser}:${ENV.redisPassword}@${ENV.redisHost}:${ENV.redisPort}`,
+		url: `redis://${ENV.redisUser}:${password}@${ENV.redisHost}:${ENV.redisPort}`,
 	})
 
 	redisClient.on("error", (err) => logger.error("Redis error: ", err))
