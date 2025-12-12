@@ -4,6 +4,6 @@ WORKDIR /app
 
 COPY . .
 
-RUN npm install --loglevel warn
+RUN npm install
 
-CMD ["npm", "start"]
+CMD ["npm", "start", "--loglevel warn"]
