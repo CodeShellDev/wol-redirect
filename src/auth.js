@@ -62,8 +62,6 @@ function Init() {
 					const email = userInfo.email
 					const locale = userInfo.locale
 
-					logger.dev("User info: " + JSON.stringify(userInfo))
-
 					if (!username) {
 						return done(new Error("No username provided by IDP"))
 					}
