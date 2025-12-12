@@ -38,7 +38,7 @@ export async function startWoLProcess({
 		const clientID = data.client_id
 		if (!clientID) throw new Error("No client_id returned from server")
 
-		logEl.textContent += "Process started. Waiting for service...\n"
+		outputHandler("Process started. Waiting for service...")
 
 		const protocol = location.protocol === "https:" ? "wss" : "ws"
 		const ws = new WebSocket(
