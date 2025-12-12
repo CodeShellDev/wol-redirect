@@ -103,6 +103,8 @@ function Init() {
 
 		const serviceUrl = await GetFromCache(key)
 
+		logger.dev("ServiceURL: ", serviceUrl)
+
 		if (req.hostname !== redirectURL.hostname) {
 			const originalHost = req.headers["x-forwarded-host"] || req.get("host")
 			const originalProto = req.headers["x-forwarded-proto"] || req.protocol
@@ -111,6 +113,8 @@ function Init() {
 			const originalUrl = `${originalProto}://${originalHost}${originalUri}`
 
 			await WriteToCache(key, originalUrl)
+
+			logger.dev("Cached ", originalUrl, " under ", key)
 
 			return res.redirect(`${redirectURL.origin}`)
 		}
