@@ -1,4 +1,4 @@
-import Server from "ws"
+import { WebSocketServer } from "ws"
 import { v4 as uuidv4 } from "uuid"
 
 const waiters = new Map()
@@ -7,7 +7,7 @@ const clients = {}
 let wss = null
 
 export function Attach(server, app, router) {
-	wss = new Server({ server })
+	wss = new WebSocketServer({ server })
 
 	wss.on("connection", (socket, req) => {
 		const url = new URL(req.url, "http://localhost")
