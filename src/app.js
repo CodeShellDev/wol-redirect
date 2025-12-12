@@ -29,12 +29,13 @@ app.use((req, res, next) => {
 	next()
 })
 
+log.Init()
+env.Load()
+
 if (log.logger.level != env.ENV.logLevel) {
 	log.Init(env.ENV.logLevel)
 }
 
-log.Init()
-env.Load()
 log.Log()
 
 await Init()
