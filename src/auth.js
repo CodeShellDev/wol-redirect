@@ -104,6 +104,7 @@ function Init() {
 		const serviceUrl = await GetFromCache(key)
 
 		logger.dev("ServiceURL: " + serviceUrl)
+		logger.dev("Key: " + key)
 
 		if (req.hostname !== redirectURL.hostname) {
 			const originalHost = req.headers["x-forwarded-host"] || req.get("host")
