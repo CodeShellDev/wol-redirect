@@ -1,6 +1,6 @@
 export function getProfileColor(
 	str,
-	{ hues = [10, 40, 60, 90, 120, 150, 180, 200, 220, 250, 280, 310, 340] }
+	{ hues = [10, 40, 60, 90, 120, 150, 180, 200, 220, 250, 280, 310, 340] } = {}
 ) {
 	let hash = 0
 	for (let i = 0; i < str.length; i++) {
