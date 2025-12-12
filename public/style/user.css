@@ -19,14 +19,14 @@
 	text-align: center;
 	justify-content: center;
 
-	margin: 5px;
+	margin: 3px;
 	padding: 1px;
 
 	border-radius: 360px;
 	aspect-ratio: 1 / 1;
 
-	height: clamp(20px, 2vh + 2vw, 6vh);
+	height: clamp(40px, 6vmin, 60px);
+	font-size: clamp(20px, 6vmin / 2, 30px);
 
-	font-size: clamp(15px, 1vh + 1vw, 5vh - 15px);
 	font-weight: bold;
 }
