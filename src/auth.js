@@ -89,6 +89,7 @@ function Init() {
 			resave: false,
 			saveUninitialized: false,
 			cookie: {
+				domain: redirectURL.hostname,
 				secure: true,
 				sameSite: "none",
 				maxAge: 1000 * 60 * 60,
@@ -118,7 +119,7 @@ function Init() {
 
 			logger.dev("Cached " + originalUrl + " under " + key)
 
-			return res.redirect(`${redirectURL.origin}`)
+			return res.redirect(`${redirectURL.origin}/?`)
 		}
 
 		if (!req.isAuthenticated()) {
