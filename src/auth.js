@@ -1,4 +1,5 @@
 import * as express from "express"
+import { v4 as uuidv4 } from "uuid"
 
 import session from "express-session"
 import { RedisStore } from "connect-redis"
@@ -91,7 +92,7 @@ function Init() {
 			cookie: {
 				domain: redirectURL.hostname,
 				secure: true,
-				sameSite: "none",
+				sameSite: "lax",
 				maxAge: 1000 * 60 * 60,
 			},
 		})
@@ -101,12 +102,15 @@ function Init() {
 	router.use(passport.session())
 
 	router.get("/", async (req, res) => {
-		const key = `service=${req.sessionID}`
-
-		const serviceUrl = await GetFromCache(key)
-
-		logger.dev("ServiceURL: " + serviceUrl)
-		logger.dev("Key: " + key)
+		if (req.query.session_id) {
+			res.cookie("session_id", req.query.session_id, {
+				domain: redirectURL.hostname,
+				httpOnly: true,
+				secure: true,
+				sameSite: "lax",
+				maxAge: 1000 * 60 * 60,
+			})
+		}
 
 		if (req.hostname !== redirectURL.hostname) {
 			const originalHost = req.headers["x-forwarded-host"] || req.get("host")
@@ -115,11 +119,11 @@ function Init() {
 
 			const originalUrl = `${originalProto}://${originalHost}${originalUri}`
 
-			await WriteToCache(key, originalUrl)
+			const sessionID = uuidv4()
 
-			logger.dev("Cached " + originalUrl + " under " + key)
+			await WriteToCache(`service=${sessionID}`, originalUrl)
 
-			return res.redirect(`${redirectURL.origin}/?`)
+			return res.redirect(`${redirectURL.origin}/?session_id=${sessionID}`)
 		}
 
 		if (!req.isAuthenticated()) {

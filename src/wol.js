@@ -7,6 +7,7 @@ import { ENV } from "./env.js"
 import request from "./utils/request.js"
 
 import * as wss from "./wss.js"
+import { GetFromCache } from "./db.js"
 
 const router = express.Router()
 
@@ -317,7 +318,10 @@ async function startProcessing(req, res) {
 		})
 	}
 
-	const originalUrl = req.cookies.serviceUrl
+	const sessionID = req.cookies.session_id
+
+	const originalUrl = await GetFromCache(`service=${sessionID}`)
+
 	if (!originalUrl) {
 		return res.json({
 			error: true,
