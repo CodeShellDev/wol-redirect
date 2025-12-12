@@ -20,7 +20,6 @@ export const ENV = {
 	vePort: "9999",
 
 	sessionKey: "",
-	cookieKey: "",
 
 	authorizationURL: "",
 	resourceURL: "",
@@ -64,13 +63,9 @@ export function Load() {
 	}
 
 	ENV.sessionKey = process.env.SESSION_KEY || ""
-	ENV.cookieKey = process.env.COOKIE_KEY || ""
 
 	if (!ENV.sessionKey) {
 		logger.fatal("No session key provided")
-	}
-	if (!ENV.cookieKey) {
-		logger.fatal("No cooki key provided")
 	}
 
 	ENV.authorizationURL = process.env.AUTHORIZATION_URL || ""

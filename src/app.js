@@ -1,6 +1,5 @@
 import express from "express"
 import { createServer } from "http"
-import cookieParser from "cookie-parser"
 
 import { Init } from "./db.js"
 import * as log from "./utils/logger.js"
@@ -40,8 +39,6 @@ if (log.logger.level != env.ENV.logLevel) {
 log.Log()
 
 await Init()
-
-app.use(cookieParser(env.ENV.cookieKey))
 
 app.use("/", auth())
 app.use((err, req, res, next) => {

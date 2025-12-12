@@ -318,7 +318,7 @@ async function startProcessing(req, res) {
 		})
 	}
 
-	const sessionID = req.signedCookies.session_id
+	const sessionID = req.cookies.session_id
 
 	if (!sessionID) {
 		return res.json({
