@@ -12,11 +12,11 @@
 	},
 	"license": "MIT",
 	"author": "codeshelldev",
-	"type": "commonjs",
-	"main": "app.mjs",
+	"type": "module",
+	"main": "app.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"start": "node ./src/app.mjs"
+		"start": "node ./src/app.js"
 	},
 	"dependencies": {
 		"connect-redis": "^9.0.0",

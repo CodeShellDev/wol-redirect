@@ -1,5 +1,5 @@
-const WebSocket = require("ws")
-const { v4: uuidv4 } = require("uuid")
+import { Server } from "ws"
+import { v4 as uuidv4 } from "uuid"
 
 const waiters = new Map()
 const clients = {}
@@ -7,7 +7,7 @@ const clients = {}
 let wss = null
 
 function Attach(server, app, router) {
-	wss = new WebSocket.Server({ server })
+	wss = new Server({ server })
 
 	wss.on("connection", (socket, req) => {
 		const url = new URL(req.url, "http://localhost")
@@ -74,4 +74,4 @@ function CreateClientID() {
 	return uuidv4()
 }
 
-module.exports = { Attach, GetClient, WaitForClient, CreateClientID }
+export default { Attach, GetClient, WaitForClient, CreateClientID }

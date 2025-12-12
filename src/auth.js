@@ -1,21 +1,24 @@
-const express = require("express")
-const router = express.Router()
+import { Router } from "express"
 
-const session = require("express-session")
+import session from "express-session"
 
-const passport = require("passport")
-const OAuth2Strategy = require("passport-oauth2")
+import {
+	use,
+	serializeUser,
+	deserializeUser,
+	initialize,
+	session as _session,
+	authenticate,
+} from "passport"
+import OAuth2Strategy from "passport-oauth2"
 
-const { ENV } = require("./env")
-const { logger } = require("./utils/logger")
+import { ENV } from "./env"
+import { logger } from "./utils/logger"
 
-const {
-	redisClient,
-	GetFromCache,
-	WriteToCache,
-	DeleteFromCache,
-} = require("./db")
-const { RedisStore } = require("connect-redis")
+import { redisClient, GetFromCache, WriteToCache, DeleteFromCache } from "./db"
+import { RedisStore } from "connect-redis"
+
+const router = Router()
 
 const redirectURL = new URL(ENV.redirectURL)
 
@@ -39,7 +42,7 @@ async function fetchUserInfo(accessToken) {
 	}
 }
 
-passport.use(
+use(
 	new OAuth2Strategy(
 		{
 			authorizationURL: ENV.authorizationURL,
@@ -75,8 +78,8 @@ passport.use(
 	)
 )
 
-passport.serializeUser((user, done) => done(null, user))
-passport.deserializeUser((user, done) => done(null, user))
+serializeUser((user, done) => done(null, user))
+deserializeUser((user, done) => done(null, user))
 
 router.use(
 	session({
@@ -91,8 +94,8 @@ router.use(
 	})
 )
 
-router.use(passport.initialize())
-router.use(passport.session())
+router.use(initialize())
+router.use(_session())
 
 router.get("/", async (req, res) => {
 	const key = `service=${req.sessionID}`
@@ -127,9 +130,9 @@ router.get("/", async (req, res) => {
 	await DeleteFromCache(key)
 })
 
-router.get("/auth", passport.authenticate("oauth2"))
+router.get("/auth", authenticate("oauth2"))
 
-router.get("/auth/callback", passport.authenticate("oauth2"), (req, res) =>
+router.get("/auth/callback", authenticate("oauth2"), (req, res) =>
 	res.redirect("/")
 )
 
@@ -141,4 +144,4 @@ router.get("/logout", (req, res) => {
 	})
 })
 
-module.exports = router
+export default router

@@ -1,12 +1,12 @@
-const fs = require("fs")
+import { statSync } from "fs"
 
 function exists(p) {
 	try {
-		fs.statSync(p)
+		statSync(p)
 		return true
 	} catch (err) {
 		return false
 	}
 }
 
-module.exports = { exists }
+export default { exists }

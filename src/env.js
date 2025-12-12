@@ -1,6 +1,6 @@
-const logger = require("./utils/logger").logger
+import { logger } from "./utils/logger"
 
-const fsutils = require("./utils/fs")
+import { exists } from "./utils/fs"
 
 const ENV = {
 	configPath: "/app/config/mapping.json",
@@ -35,7 +35,7 @@ const ENV = {
 function Load() {
 	let configPath = process.env.CONFIG_PATH || ENV.configPath
 
-	if (fsutils.exists(configPath)) {
+	if (exists(configPath)) {
 		ENV.configPath = configPath
 	} else {
 		logger.fatal(`${configPath} not found`)
@@ -104,4 +104,4 @@ function Load() {
 	logger.info("Loaded Environment")
 }
 
-module.exports = { ENV, Load }
+export default { ENV, Load }

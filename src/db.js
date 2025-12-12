@@ -1,14 +1,14 @@
-const { ENV } = require("./env")
-const { logger } = require("./utils/logger")
+import { ENV } from "./env"
+import { logger } from "./utils/logger"
 
-const redis = require("redis")
+import { createClient } from "redis"
 
 let redisClient
 
 async function Init() {
 	const password = encodeURIComponent(ENV.redisPassword)
 
-	redisClient = redis.createClient({
+	redisClient = createClient({
 		url: `redis://${ENV.redisUser}:${password}@${ENV.redisHost}:${ENV.redisPort}`,
 	})
 
@@ -49,7 +49,7 @@ async function Close() {
 	await redisClient.quit()
 }
 
-module.exports = {
+export default {
 	redisClient,
 	Init,
 	Close,

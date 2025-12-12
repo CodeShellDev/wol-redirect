@@ -1,22 +1,15 @@
-const express = require("express")
-const log = require("./utils/logger")
-const db = require("./db")
-const env = require("./env")
-const http = require("http")
+import express from "express"
+import { createServer } from "http"
+
+import { Init } from "./db"
+import log from "./utils/logger"
+import env from "./env"
+
+import auth from "./auth"
+import wol from "./wol"
+import wss from "./wss"
 
 const app = express()
-
-log.Init()
-
-env.Load()
-
-log.Log()
-
-if (log.logger.level != env.ENV.logLevel) {
-	log.Init(env.ENV.logLevel)
-}
-
-await db.Init()
 
 app.use(express.static("public"))
 
@@ -36,10 +29,17 @@ app.use((req, res, next) => {
 	next()
 })
 
-const auth = require("./auth")
-const wol = require("./wol")
+log.Init()
 
-const wss = require("./wss")
+env.Load()
+
+log.Log()
+
+if (log.logger.level != env.ENV.logLevel) {
+	log.Init(env.ENV.logLevel)
+}
+
+await Init()
 
 app.use("/", auth)
 app.use((err, req, res, next) => {
@@ -47,10 +47,10 @@ app.use((err, req, res, next) => {
 	res.status(500).send("Encountered an unexpected error")
 })
 
-const server = http.createServer(app)
+const server = createServer(app)
 
 wss.Attach(server, app, wol)
 
 server.listen(env.ENV.port, () => {
-	log.logger.info(`Server running on Port ${env.ENV.port}`)
+	log.logger.info(`Server running on Port ${ENV.port}`)
 })

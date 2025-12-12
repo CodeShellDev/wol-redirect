@@ -87,4 +87,4 @@ function Log() {
 	logger.info(`Initialized Logger with Level of ${logger.level}`)
 }
 
-module.exports = { Init, Log, logger }
+export default { Init, Log, logger }

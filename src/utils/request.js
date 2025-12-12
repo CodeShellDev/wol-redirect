@@ -1,4 +1,4 @@
-const logger = require("./logger").logger
+import { logger } from "./logger"
 
 async function post(url, data) {
 	try {
@@ -42,4 +42,4 @@ async function get(url, options) {
 	}
 }
 
-module.exports = { post, get }
+export default { post, get }

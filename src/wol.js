@@ -1,16 +1,16 @@
-const express = require("express")
-const wss = require("./wss")
+import { Router } from "express"
+import { CreateClientID, WaitForClient } from "./wss"
 
-const WebSocket = require("ws")
+import WebSocket, { OPEN } from "ws"
 
-const { logger } = require("./utils/logger")
-const request = require("./utils/request")
-const { ENV } = require("./env")
-const fs = require("fs")
+import { logger } from "./utils/logger"
+import { post, get } from "./utils/request"
+import { ENV } from "./env"
+import { readFileSync } from "fs"
 
-const router = express.Router()
+const router = Router()
 
-const CONFIG = JSON.parse(fs.readFileSync(ENV.configPath, "utf8"))
+const CONFIG = JSON.parse(readFileSync(ENV.configPath, "utf8"))
 
 const HostType = {
 	PHYSICAL: "physical",
@@ -204,7 +204,7 @@ async function trySendWoLPackets(client, hosts, serviceUrl) {
 			`Sending WoL request to ${targetUrl}: ${JSON.stringify(payload)}`
 		)
 
-		const response = await request.post(targetUrl, payload)
+		const response = await post(targetUrl, payload)
 		let responseData = null
 		if (response) {
 			try {
@@ -285,7 +285,7 @@ async function waitForHostUp(url, options = {}) {
 	const start = Date.now()
 
 	while (Date.now() - start < timeout) {
-		const res = await request.get(url, {
+		const res = await get(url, {
 			headers: {
 				"X-Redirect-Service": 1,
 			},
@@ -340,7 +340,7 @@ async function startProcessing(req, res) {
 		})
 	}
 
-	const clientID = wss.CreateClientID()
+	const clientID = CreateClientID()
 
 	res.json({
 		client_id: clientID,
@@ -352,7 +352,7 @@ async function startProcessing(req, res) {
 
 	let wolResult = null
 
-	const ws = await wss.WaitForClient(clientID)
+	const ws = await WaitForClient(clientID)
 
 	if (!ws) {
 		return
@@ -392,7 +392,7 @@ async function startProcessing(req, res) {
 }
 
 function sendToClient(ws, data) {
-	if (ws.readyState === WebSocket.OPEN) {
+	if (ws.readyState === OPEN) {
 		ws.send(JSON.stringify(data))
 		return true
 	}
@@ -401,7 +401,7 @@ function sendToClient(ws, data) {
 
 function errorClient(ws, err) {
 	if (err) {
-		if (ws.readyState === WebSocket.OPEN) {
+		if (ws.readyState === OPEN) {
 			ws.close()
 		}
 		return true
@@ -411,4 +411,4 @@ function errorClient(ws, err) {
 
 router.get("/start", async (req, res) => await startProcessing(req, res))
 
-module.exports = router
+export default router
