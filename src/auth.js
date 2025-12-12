@@ -97,54 +97,54 @@ function Init() {
 
 	router.use(passport.initialize())
 	router.use(passport.session())
+
+	router.get("/", async (req, res) => {
+		const key = `service=${req.sessionID}`
+
+		const serviceUrl = await GetFromCache(key)
+
+		if (req.hostname !== redirectURL.hostname) {
+			const originalHost = req.headers["x-forwarded-host"] || req.get("host")
+			const originalProto = req.headers["x-forwarded-proto"] || req.protocol
+			const originalUri = req.headers["x-forwarded-uri"] || req.originalUrl
+
+			const originalUrl = `${originalProto}://${originalHost}${originalUri}`
+
+			await WriteToCache(key, originalUrl)
+
+			return res.redirect(`${redirectURL.origin}`)
+		}
+
+		if (!req.isAuthenticated()) {
+			return res.redirect("/auth")
+		}
+
+		res.render("home", {
+			user: {
+				name: req.user.username,
+				locale: req.user.locale,
+				email: req.user.email,
+			},
+			service: serviceUrl,
+		})
+
+		await DeleteFromCache(key)
+	})
+
+	router.get("/auth", passport.authenticate("oauth2"))
+
+	router.get("/auth/callback", passport.authenticate("oauth2"), (req, res) =>
+		res.redirect("/")
+	)
+
+	router.get("/logout", (req, res) => {
+		if (!req.isAuthenticated()) return
+
+		req.session.destroy(() => {
+			req.logout(() => res.redirect(ENV.logoutURL))
+		})
+	})
 }
-
-router.get("/", async (req, res) => {
-	const key = `service=${req.sessionID}`
-
-	const serviceUrl = await GetFromCache(key)
-
-	if (req.hostname !== redirectURL.hostname) {
-		const originalHost = req.headers["x-forwarded-host"] || req.get("host")
-		const originalProto = req.headers["x-forwarded-proto"] || req.protocol
-		const originalUri = req.headers["x-forwarded-uri"] || req.originalUrl
-
-		const originalUrl = `${originalProto}://${originalHost}${originalUri}`
-
-		await WriteToCache(key, originalUrl)
-
-		return res.redirect(`${redirectURL.origin}`)
-	}
-
-	if (!req.isAuthenticated()) {
-		return res.redirect("/auth")
-	}
-
-	res.render("home", {
-		user: {
-			name: req.user.username,
-			locale: req.user.locale,
-			email: req.user.email,
-		},
-		service: serviceUrl,
-	})
-
-	await DeleteFromCache(key)
-})
-
-router.get("/auth", passport.authenticate("oauth2"))
-
-router.get("/auth/callback", passport.authenticate("oauth2"), (req, res) =>
-	res.redirect("/")
-)
-
-router.get("/logout", (req, res) => {
-	if (!req.isAuthenticated()) return
-
-	req.session.destroy(() => {
-		req.logout(() => res.redirect(ENV.logoutURL))
-	})
-})
 
 export function Router() {
 	Init()
