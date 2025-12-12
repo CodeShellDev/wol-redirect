@@ -14,7 +14,7 @@ const {
 	GetFromCache,
 	WriteToCache,
 	DeleteFromCache,
-} = require("db")
+} = require("./db")
 const connectRedis = require("connect-redis")
 const RedisStore = connectRedis(session)
 
