@@ -50,5 +50,5 @@ const server = createServer(app)
 Attach(server, app, wol())
 
 server.listen(env.ENV.port, () => {
-	log.logger.info(`Server running on Port ${ENV.port}`)
+	log.logger.info(`Server running on Port ${env.ENV.port}`)
 })
