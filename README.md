@@ -10,10 +10,6 @@ _Well, except for meteorite_
 Get the latest `docker-compose.yaml` file:
 
 ```yaml
-<<<<<<< HEAD
-=======
----s
->>>>>>> b717109197a2d856bff46c603e369a562b95a948
 services:
   wol:
     container_name: wol-client
