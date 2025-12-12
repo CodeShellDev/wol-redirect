@@ -318,14 +318,21 @@ async function startProcessing(req, res) {
 		})
 	}
 
-	const sessionID = req.cookies.session_id
+	const sessionID = req.signedCookies.session_id
+
+	if (!sessionID) {
+		return res.json({
+			error: true,
+			message: ENV.exposeLogs ? "Missing session_id cookie" : "",
+		})
+	}
 
 	const originalUrl = await GetFromCache(`service=${sessionID}`)
 
 	if (!originalUrl) {
 		return res.json({
 			error: true,
-			message: ENV.exposeLogs ? "Missing serviceUrl cookie" : "",
+			message: ENV.exposeLogs ? "Invalid session_id" : "",
 		})
 	}
 
