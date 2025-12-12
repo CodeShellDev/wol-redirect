@@ -16,7 +16,7 @@ if (log.logger.level != env.ENV.logLevel) {
 	log.Init(env.ENV.logLevel)
 }
 
-db.Init()
+await db.Init()
 
 app.use(express.static("public"))
 
