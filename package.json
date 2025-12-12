@@ -13,10 +13,10 @@
 	"license": "MIT",
 	"author": "codeshelldev",
 	"type": "commonjs",
-	"main": "app.js",
+	"main": "app.mjs",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"start": "node ./src/app.js"
+		"start": "node ./src/app.mjs"
 	},
 	"dependencies": {
 		"connect-redis": "^9.0.0",

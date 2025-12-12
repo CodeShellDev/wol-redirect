@@ -6,19 +6,17 @@ const http = require("http")
 
 const app = express()
 
-async function init() {
-	log.Init()
+log.Init()
 
-	env.Load()
+env.Load()
 
-	log.Log()
+log.Log()
 
-	if (log.logger.level != env.ENV.logLevel) {
-		log.Init(env.ENV.logLevel)
-	}
-
-	await db.Init()
+if (log.logger.level != env.ENV.logLevel) {
+	log.Init(env.ENV.logLevel)
 }
+
+await db.Init()
 
 app.use(express.static("public"))
 
@@ -37,8 +35,6 @@ app.use((req, res, next) => {
 	log.logger.info(`${req.method} ${url.pathname} ${url.search}`)
 	next()
 })
-
-init()
 
 const auth = require("./auth")
 const wol = require("./wol")
