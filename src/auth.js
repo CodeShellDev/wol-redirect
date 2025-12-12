@@ -107,7 +107,6 @@ function Init() {
 		if (req.query.session_id) {
 			res.cookie("session_id", req.query.session_id, {
 				domain: redirectURL.hostname,
-				signed: true,
 				httpOnly: true,
 				secure: true,
 				sameSite: "lax",
