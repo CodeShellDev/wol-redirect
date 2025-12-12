@@ -49,7 +49,7 @@ app.use((err, req, res, next) => {
 
 const server = http.createServer(app)
 
-wss.attach(server, app, wol)
+wss.Attach(server, app, wol)
 
 server.listen(env.ENV.port, () => {
 	log.logger.info(`Server running on Port ${env.ENV.port}`)

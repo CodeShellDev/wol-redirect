@@ -340,7 +340,7 @@ async function startProcessing(req, res) {
 		})
 	}
 
-	const clientID = wss.createClientID()
+	const clientID = wss.CreateClientID()
 
 	res.json({
 		client_id: clientID,
@@ -352,7 +352,7 @@ async function startProcessing(req, res) {
 
 	let wolResult = null
 
-	const ws = await wss.waitForClient(clientID)
+	const ws = await wss.WaitForClient(clientID)
 
 	if (!ws) {
 		return
