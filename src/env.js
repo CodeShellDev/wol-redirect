@@ -10,7 +10,7 @@ const ENV = {
 
 	redisHost: "redis",
 	redisPort: "6379",
-	redisUser: "wol",
+	redisUser: "default",
 	redisPassword: "",
 
 	woldQueryPattern: "",
