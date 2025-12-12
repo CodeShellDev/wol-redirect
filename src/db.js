@@ -7,7 +7,7 @@ let redisClient
 
 async function Init() {
 	redisClient = redis.createClient({
-		url: `redis://${ENV.redisHost}:${ENV.redisPort}`,
+		url: `redis://${ENV.redisUser}:${ENV.redisPassword}@${ENV.redisHost}:${ENV.redisPort}`,
 	})
 
 	redisClient.on("error", (err) => logger.error("Redis error: ", err))
