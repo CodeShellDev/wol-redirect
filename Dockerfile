@@ -6,4 +6,4 @@ COPY . .
 
 RUN npm install
 
-CMD ["npm", "start", "--loglevel warn"]
+CMD ["npm", "--loglevel warn", "start"]
