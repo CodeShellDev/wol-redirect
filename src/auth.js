@@ -2,13 +2,21 @@ const express = require("express")
 const router = express.Router()
 
 const session = require("express-session")
-const cookieParser = require("cookie-parser")
 
 const passport = require("passport")
 const OAuth2Strategy = require("passport-oauth2")
 
 const { ENV } = require("./env")
 const { logger } = require("./utils/logger")
+
+const {
+	redisClient,
+	GetFromCache,
+	WriteToCache,
+	DeleteFromCache,
+} = require("db")
+const connectRedis = require("connect-redis")
+const RedisStore = connectRedis(session)
 
 const redirectURL = new URL(ENV.redirectURL)
 
@@ -71,18 +79,15 @@ passport.use(
 passport.serializeUser((user, done) => done(null, user))
 passport.deserializeUser((user, done) => done(null, user))
 
-router.use(cookieParser(ENV.cookieKey))
-
 router.use(
 	session({
-		secret: ENV.sessionKey,
+		store: new RedisStore({ redisClient }),
+		secret: process.env.SESSION_SECRET,
 		resave: false,
 		saveUninitialized: false,
 		cookie: {
-			httpOnly: true,
 			secure: true,
-			sameSite: "lax",
-			maxAge: 1000 * 60 * 15,
+			maxAge: 1000 * 60 * 60,
 		},
 	})
 )
@@ -90,20 +95,10 @@ router.use(
 router.use(passport.initialize())
 router.use(passport.session())
 
-router.get("/", (req, res) => {
-	if (req.query.serviceUrl) {
-		res.cookie("serviceUrl", req.query.serviceUrl, {
-			domain: redirectURL.hostname,
-			httpOnly: true,
-			secure: true,
-			sameSite: "lax",
-			maxAge: 300000,
-		})
-	}
+router.get("/", async (req, res) => {
+	const key = `service=${req.sessionID}`
 
-	logger.debug(
-		`Client requested ${req.hostname}, redirecting to ${redirectURL.hostname}`
-	)
+	const serviceUrl = await GetFromCache(key)
 
 	if (req.hostname !== redirectURL.hostname) {
 		const originalHost = req.headers["x-forwarded-host"] || req.get("host")
@@ -111,7 +106,10 @@ router.get("/", (req, res) => {
 		const originalUri = req.headers["x-forwarded-uri"] || req.originalUrl
 
 		const originalUrl = `${originalProto}://${originalHost}${originalUri}`
-		return res.redirect(`${redirectURL.origin}?serviceUrl=${originalUrl}`)
+
+		await WriteToCache(key, originalUrl)
+
+		return res.redirect(`${redirectURL.origin}`)
 	}
 
 	if (!req.isAuthenticated()) {
@@ -124,7 +122,7 @@ router.get("/", (req, res) => {
 			locale: req.user.locale,
 			email: req.user.email,
 		},
-		redirect: redirectURL.toString(),
+		service: serviceUrl,
 	})
 })
 

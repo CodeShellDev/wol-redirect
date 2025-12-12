@@ -19,12 +19,13 @@
 		"start": "node ./src/app.js"
 	},
 	"dependencies": {
-		"cookie-parser": "^1.4.7",
+		"connect-redis": "^9.0.0",
 		"ejs": "^3.1.10",
 		"express": "^4.21.1",
-		"express-session": "^1.18.1",
+		"express-session": "^1.18.2",
 		"passport": "^0.7.0",
 		"passport-oauth2": "^1.8.0",
+		"redis": "^5.10.0",
 		"uuid": "^13.0.0",
 		"ws": "^8.18.3"
 	}

@@ -1,5 +1,6 @@
 const express = require("express")
 const log = require("./utils/logger")
+const db = require("./db")
 const env = require("./env")
 const http = require("http")
 
@@ -14,6 +15,8 @@ log.Log()
 if (log.logger.level != env.ENV.logLevel) {
 	log.Init(env.ENV.logLevel)
 }
+
+db.Init()
 
 app.use(express.static("public"))
 

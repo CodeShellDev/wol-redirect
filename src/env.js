@@ -8,6 +8,11 @@ const ENV = {
 	logLevel: "info",
 	exposeLogs: true,
 
+	redisHost: "redis",
+	redisPort: "6379",
+	redisUser: "wol",
+	redisPassword: "",
+
 	woldQueryPattern: "",
 	wolURL: "",
 
@@ -15,7 +20,6 @@ const ENV = {
 	vePort: "9999",
 
 	sessionKey: "",
-	cookieKey: "",
 
 	authorizationURL: "",
 	resourceURL: "",
@@ -40,6 +44,11 @@ function Load() {
 	ENV.port = process.env.PORT || ENV.port
 	ENV.logLevel = process.env.LOG_LEVEL || ENV.logLevel
 
+	ENV.redisHost = process.env.REDIS_HOST || ENV.redisHost
+	ENV.redisPort = process.env.REDIS_PORT || ENV.redisPort
+	ENV.redisUser = process.env.REDIS_USER || ENV.redisUser
+	ENV.redisPassword = process.env.REDIS_PASSWORD || ENV.redisPassword
+
 	ENV.woldQueryPattern = process.env.WOLD_QUERY_PATTERN || ""
 
 	ENV.exposeLogs = process.env.EXPOSE_LOGS || ENV.exposeLogs
@@ -54,13 +63,9 @@ function Load() {
 	}
 
 	ENV.sessionKey = process.env.SESSION_KEY || ""
-	ENV.cookieKey = process.env.COOKIE_KEY || ""
 
 	if (!ENV.sessionKey) {
 		logger.fatal("No session key provided")
-	}
-	if (!ENV.cookieKey) {
-		logger.fatal("No cookie key provided")
 	}
 
 	ENV.authorizationURL = process.env.AUTHORIZATION_URL || ""

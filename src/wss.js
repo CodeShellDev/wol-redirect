@@ -6,7 +6,7 @@ const clients = {}
 
 let wss = null
 
-function attach(server, app, router) {
+function Attach(server, app, router) {
 	wss = new WebSocket.Server({ server })
 
 	wss.on("connection", (socket, req) => {
@@ -50,7 +50,7 @@ function attach(server, app, router) {
 	app.use("/", router)
 }
 
-function waitForClient(clientID, timeout = 5000) {
+function WaitForClient(clientID, timeout = 5000) {
 	return new Promise((resolve, reject) => {
 		const existing = clients[clientID]
 		if (existing) return resolve(existing)
@@ -66,12 +66,12 @@ function waitForClient(clientID, timeout = 5000) {
 	})
 }
 
-function getClient(clientID) {
+function GetClient(clientID) {
 	return clients[clientID]
 }
 
-function createClientID() {
+function CreateClientID() {
 	return uuidv4()
 }
 
-module.exports = { attach, getClient, waitForClient, createClientID }
+module.exports = { Attach, GetClient, WaitForClient, CreateClientID }
