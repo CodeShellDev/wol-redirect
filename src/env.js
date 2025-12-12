@@ -3,7 +3,7 @@ const logger = require("./utils/logger").logger
 const fsutils = require("./utils/fs")
 
 const ENV = {
-	configPath: "config/mapping.json",
+	configPath: "/app/config/mapping.json",
 	port: "6789",
 	logLevel: "info",
 	exposeLogs: true,
