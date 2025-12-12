@@ -116,6 +116,7 @@ router.get("/", (req, res) => {
 
 	return res.render("home", {
 		username: req.user.username,
+		redirect: redirectURL.toString(),
 	})
 })
 
