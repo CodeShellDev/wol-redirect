@@ -81,7 +81,7 @@ passport.deserializeUser((user, done) => done(null, user))
 router.use(
 	session({
 		store: new RedisStore({ client: redisClient }),
-		secret: process.env.SESSION_SECRET,
+		secret: ENV.sessionKey,
 		resave: false,
 		saveUninitialized: false,
 		cookie: {
