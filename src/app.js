@@ -17,7 +17,7 @@ if (log.logger.level != env.ENV.logLevel) {
 
 app.set("view engine", "ejs")
 app.set("trust proxy", true)
-app.use(express.static("../public"))
+app.use(express.static("public"))
 
 app.use((req, res, next) => {
 	res.setHeader("X-Redirect-Service", "1")
@@ -38,6 +38,10 @@ const wol = require("./wol")
 const wss = require("./wss")
 
 app.use("/", auth)
+app.use((err, req, res, next) => {
+	log.logger.error(err)
+	res.status(500).send("Encountered an unexpected error")
+})
 
 const server = http.createServer(app)
 
