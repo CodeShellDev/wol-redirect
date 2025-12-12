@@ -1,14 +1,23 @@
 {
 	"name": "wol-redirect",
 	"version": "none",
-	"description": "A Redirect and WoL Service",
+	"description": "",
+	"homepage": "https://github.com/CodeShellDev/wol-redirect#readme",
+	"bugs": {
+		"url": "https://github.com/CodeShellDev/wol-redirect/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeShellDev/wol-redirect.git"
+	},
+	"license": "MIT",
+	"author": "codeshelldev",
+	"type": "commonjs",
 	"main": "app.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "node ./src/app.js"
 	},
-	"author": "codeshelldev",
-	"license": "MIT",
 	"dependencies": {
 		"cookie-parser": "^1.4.7",
 		"ejs": "^3.1.10",
