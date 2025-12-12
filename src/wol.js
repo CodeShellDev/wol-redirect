@@ -1,16 +1,16 @@
-import { Router } from "express"
-import { CreateClientID, WaitForClient } from "./wss"
+import express from "express"
+import { WebSocket } from "ws"
+import fs from "fs"
 
-import WebSocket, { OPEN } from "ws"
+import { logger } from "./utils/logger.js"
+import { ENV } from "./env.js"
+import request from "./utils/request.js"
 
-import { logger } from "./utils/logger"
-import { post, get } from "./utils/request"
-import { ENV } from "./env"
-import { readFileSync } from "fs"
+import * as wss from "./wss.js"
 
-const router = Router()
+const router = express.Router()
 
-const CONFIG = JSON.parse(readFileSync(ENV.configPath, "utf8"))
+const CONFIG = JSON.parse(fs.readFileSync(ENV.configPath, "utf8"))
 
 const HostType = {
 	PHYSICAL: "physical",
@@ -204,7 +204,7 @@ async function trySendWoLPackets(client, hosts, serviceUrl) {
 			`Sending WoL request to ${targetUrl}: ${JSON.stringify(payload)}`
 		)
 
-		const response = await post(targetUrl, payload)
+		const response = await request.post(targetUrl, payload)
 		let responseData = null
 		if (response) {
 			try {
@@ -285,7 +285,7 @@ async function waitForHostUp(url, options = {}) {
 	const start = Date.now()
 
 	while (Date.now() - start < timeout) {
-		const res = await get(url, {
+		const res = await request.get(url, {
 			headers: {
 				"X-Redirect-Service": 1,
 			},
@@ -340,7 +340,7 @@ async function startProcessing(req, res) {
 		})
 	}
 
-	const clientID = CreateClientID()
+	const clientID = wss.CreateClientID()
 
 	res.json({
 		client_id: clientID,
@@ -352,7 +352,7 @@ async function startProcessing(req, res) {
 
 	let wolResult = null
 
-	const ws = await WaitForClient(clientID)
+	const ws = await wss.WaitForClient(clientID)
 
 	if (!ws) {
 		return
@@ -392,7 +392,7 @@ async function startProcessing(req, res) {
 }
 
 function sendToClient(ws, data) {
-	if (ws.readyState === OPEN) {
+	if (ws.readyState === WebSocket.OPEN) {
 		ws.send(JSON.stringify(data))
 		return true
 	}
@@ -401,7 +401,7 @@ function sendToClient(ws, data) {
 
 function errorClient(ws, err) {
 	if (err) {
-		if (ws.readyState === OPEN) {
+		if (ws.readyState === WebSocket.OPEN) {
 			ws.close()
 		}
 		return true

@@ -1,6 +1,6 @@
 import { statSync } from "fs"
 
-function exists(p) {
+export function exists(p) {
 	try {
 		statSync(p)
 		return true
@@ -8,5 +8,3 @@ function exists(p) {
 		return false
 	}
 }
-
-export default { exists }

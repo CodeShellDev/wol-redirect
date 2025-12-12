@@ -1,4 +1,4 @@
-import { Server } from "ws"
+import Server from "ws"
 import { v4 as uuidv4 } from "uuid"
 
 const waiters = new Map()
@@ -6,7 +6,7 @@ const clients = {}
 
 let wss = null
 
-function Attach(server, app, router) {
+export function Attach(server, app, router) {
 	wss = new Server({ server })
 
 	wss.on("connection", (socket, req) => {
@@ -50,7 +50,7 @@ function Attach(server, app, router) {
 	app.use("/", router)
 }
 
-function WaitForClient(clientID, timeout = 5000) {
+export function WaitForClient(clientID, timeout = 5000) {
 	return new Promise((resolve, reject) => {
 		const existing = clients[clientID]
 		if (existing) return resolve(existing)
@@ -66,12 +66,10 @@ function WaitForClient(clientID, timeout = 5000) {
 	})
 }
 
-function GetClient(clientID) {
+export function GetClient(clientID) {
 	return clients[clientID]
 }
 
-function CreateClientID() {
+export function CreateClientID() {
 	return uuidv4()
 }
-
-export default { Attach, GetClient, WaitForClient, CreateClientID }

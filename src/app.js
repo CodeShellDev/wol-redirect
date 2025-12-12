@@ -1,13 +1,13 @@
 import express from "express"
 import { createServer } from "http"
 
-import { Init } from "./db"
-import log from "./utils/logger"
-import env from "./env"
+import { Init } from "./db.js"
+import * as log from "./utils/logger.js"
+import * as env from "./env.js"
 
-import auth from "./auth"
-import wol from "./wol"
-import wss from "./wss"
+import auth from "./auth.js"
+import wol from "./wol.js"
+import * as wss from "./wss.js"
 
 const app = express()
 

@@ -1,11 +1,11 @@
-import { ENV } from "./env"
-import { logger } from "./utils/logger"
+import { ENV } from "./env.js"
+import { logger } from "./utils/logger.js"
 
 import { createClient } from "redis"
 
-let redisClient
+export let redisClient
 
-async function Init() {
+export async function Init() {
 	const password = encodeURIComponent(ENV.redisPassword)
 
 	redisClient = createClient({
@@ -19,7 +19,7 @@ async function Init() {
 	logger.debug("Connected to Redis")
 }
 
-async function GetFromCache(key, { hash = false } = {}) {
+export async function GetFromCache(key, { hash = false } = {}) {
 	if (hash) {
 		return await redisClient.hGetAll(key)
 	} else {
@@ -27,7 +27,7 @@ async function GetFromCache(key, { hash = false } = {}) {
 	}
 }
 
-async function WriteToCache(key, value, { hash = false } = {}) {
+export async function WriteToCache(key, value, { hash = false } = {}) {
 	if (hash) {
 		await redisClient.hSet(key, value)
 	} else {
@@ -37,7 +37,7 @@ async function WriteToCache(key, value, { hash = false } = {}) {
 	await redisClient.expire(key, 3600)
 }
 
-async function DeleteFromCache(key, { hash = false } = {}) {
+export async function DeleteFromCache(key, { hash = false } = {}) {
 	if (hash) {
 		await redisClient.hDel(key)
 	} else {
@@ -45,15 +45,6 @@ async function DeleteFromCache(key, { hash = false } = {}) {
 	}
 }
 
-async function Close() {
+export async function Close() {
 	await redisClient.quit()
-}
-
-export default {
-	redisClient,
-	Init,
-	Close,
-	GetFromCache,
-	WriteToCache,
-	DeleteFromCache,
 }

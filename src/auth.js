@@ -1,22 +1,20 @@
 import { Router } from "express"
 
 import session from "express-session"
+import { RedisStore } from "connect-redis"
 
-import {
-	use,
-	serializeUser,
-	deserializeUser,
-	initialize,
-	session as _session,
-	authenticate,
-} from "passport"
+import passport from "passport"
 import OAuth2Strategy from "passport-oauth2"
 
-import { ENV } from "./env"
-import { logger } from "./utils/logger"
+import { ENV } from "./env.js"
+import { logger } from "./utils/logger.js"
 
-import { redisClient, GetFromCache, WriteToCache, DeleteFromCache } from "./db"
-import { RedisStore } from "connect-redis"
+import {
+	redisClient,
+	GetFromCache,
+	WriteToCache,
+	DeleteFromCache,
+} from "./db.js"
 
 const router = Router()
 
@@ -42,7 +40,7 @@ async function fetchUserInfo(accessToken) {
 	}
 }
 
-use(
+passport.use(
 	new OAuth2Strategy(
 		{
 			authorizationURL: ENV.authorizationURL,
@@ -78,8 +76,8 @@ use(
 	)
 )
 
-serializeUser((user, done) => done(null, user))
-deserializeUser((user, done) => done(null, user))
+passport.serializeUser((user, done) => done(null, user))
+passport.deserializeUser((user, done) => done(null, user))
 
 router.use(
 	session({
@@ -94,8 +92,8 @@ router.use(
 	})
 )
 
-router.use(initialize())
-router.use(_session())
+router.use(passport.initialize())
+router.use(passport.session())
 
 router.get("/", async (req, res) => {
 	const key = `service=${req.sessionID}`
@@ -130,9 +128,9 @@ router.get("/", async (req, res) => {
 	await DeleteFromCache(key)
 })
 
-router.get("/auth", authenticate("oauth2"))
+router.get("/auth", passport.authenticate("oauth2"))
 
-router.get("/auth/callback", authenticate("oauth2"), (req, res) =>
+router.get("/auth/callback", passport.authenticate("oauth2"), (req, res) =>
 	res.redirect("/")
 )
 

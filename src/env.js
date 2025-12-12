@@ -1,8 +1,8 @@
-import { logger } from "./utils/logger"
+import { logger } from "./utils/logger.js"
 
-import { exists } from "./utils/fs"
+import { exists } from "./utils/fs.js"
 
-const ENV = {
+export const ENV = {
 	configPath: "/app/config/mapping.json",
 	port: "6789",
 	logLevel: "info",
@@ -32,7 +32,7 @@ const ENV = {
 	scope: "openid profile",
 }
 
-function Load() {
+export function Load() {
 	let configPath = process.env.CONFIG_PATH || ENV.configPath
 
 	if (exists(configPath)) {
@@ -103,5 +103,3 @@ function Load() {
 
 	logger.info("Loaded Environment")
 }
-
-export default { ENV, Load }

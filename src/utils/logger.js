@@ -75,16 +75,14 @@ class Logger {
 	}
 }
 
-const logger = new Logger()
+export const logger = new Logger()
 
-function Init(logLevel) {
+export function Init(logLevel) {
 	if (logLevel) {
 		logger.level = logLevel.toLowerCase()
 	}
 }
 
-function Log() {
+export function Log() {
 	logger.info(`Initialized Logger with Level of ${logger.level}`)
 }
-
-export default { Init, Log, logger }
