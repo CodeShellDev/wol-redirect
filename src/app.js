@@ -5,12 +5,8 @@ import { Init } from "./db.js"
 import * as log from "./utils/logger.js"
 import * as env from "./env.js"
 
-log.Init()
-env.Load()
-log.Log()
-
-import auth from "./auth.js"
-import wol from "./wol.js"
+import { Router as auth } from "./auth.js"
+import { Router as wol } from "./wol.js"
 import * as wss from "./wss.js"
 
 const app = express()
@@ -36,6 +32,10 @@ app.use((req, res, next) => {
 if (log.logger.level != env.ENV.logLevel) {
 	log.Init(env.ENV.logLevel)
 }
+
+log.Init()
+env.Load()
+log.Log()
 
 await Init()
 

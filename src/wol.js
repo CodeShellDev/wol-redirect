@@ -10,12 +10,16 @@ import * as wss from "./wss.js"
 
 const router = express.Router()
 
-const CONFIG = JSON.parse(fs.readFileSync(ENV.configPath, "utf8"))
+let CONFIG
 
 const HostType = {
 	PHYSICAL: "physical",
 	VIRTUAL: "virtual",
 	DOCKER: "docker",
+}
+
+function loadConfig() {
+	CONFIG = JSON.parse(fs.readFileSync(ENV.configPath, "utf8"))
 }
 
 function buildQuery(pattern, context) {
@@ -409,6 +413,10 @@ function errorClient(ws, err) {
 	return false
 }
 
-router.get("/start", async (req, res) => await startProcessing(req, res))
+export function Router() {
+	loadConfig()
 
-export default router
+	return router
+}
+
+router.get("/start", async (req, res) => await startProcessing(req, res))

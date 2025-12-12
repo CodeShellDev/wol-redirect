@@ -1,4 +1,4 @@
-import { Router } from "express"
+import * as express from "express"
 
 import session from "express-session"
 import { RedisStore } from "connect-redis"
@@ -16,9 +16,9 @@ import {
 	DeleteFromCache,
 } from "./db.js"
 
-const router = Router()
+const router = express.Router()
 
-const redirectURL = new URL(ENV.redirectURL)
+let redirectURL
 
 async function fetchUserInfo(accessToken) {
 	try {
@@ -40,60 +40,64 @@ async function fetchUserInfo(accessToken) {
 	}
 }
 
-passport.use(
-	new OAuth2Strategy(
-		{
-			authorizationURL: ENV.authorizationURL,
-			tokenURL: ENV.tokenURL,
-			clientID: ENV.clientID,
-			clientSecret: ENV.clientSecret,
-			callbackURL: ENV.redirectURL,
-			scope: ENV.scope,
-		},
-		async (accessToken, refreshToken, profile, done) => {
-			try {
-				const userInfo = await fetchUserInfo(accessToken)
+function Init() {
+	redirectURL = new URL(ENV.redirectURL)
 
-				const username = userInfo.username || userInfo.preferred_username
-				const email = userInfo.email
-				const locale = userInfo.locale
+	passport.use(
+		new OAuth2Strategy(
+			{
+				authorizationURL: ENV.authorizationURL,
+				tokenURL: ENV.tokenURL,
+				clientID: ENV.clientID,
+				clientSecret: ENV.clientSecret,
+				callbackURL: ENV.redirectURL,
+				scope: ENV.scope,
+			},
+			async (accessToken, refreshToken, profile, done) => {
+				try {
+					const userInfo = await fetchUserInfo(accessToken)
 
-				if (!username) {
-					return done(new Error("No username provided by IDP"))
+					const username = userInfo.username || userInfo.preferred_username
+					const email = userInfo.email
+					const locale = userInfo.locale
+
+					if (!username) {
+						return done(new Error("No username provided by IDP"))
+					}
+
+					return done(null, {
+						accessToken,
+						username,
+						email,
+						locale,
+						rawUserInfo: userInfo,
+					})
+				} catch (err) {
+					return done(err)
 				}
-
-				return done(null, {
-					accessToken,
-					username,
-					email,
-					locale,
-					rawUserInfo: userInfo,
-				})
-			} catch (err) {
-				return done(err)
 			}
-		}
+		)
 	)
-)
 
-passport.serializeUser((user, done) => done(null, user))
-passport.deserializeUser((user, done) => done(null, user))
+	passport.serializeUser((user, done) => done(null, user))
+	passport.deserializeUser((user, done) => done(null, user))
 
-router.use(
-	session({
-		store: new RedisStore({ client: redisClient }),
-		secret: ENV.sessionKey,
-		resave: false,
-		saveUninitialized: false,
-		cookie: {
-			secure: true,
-			maxAge: 1000 * 60 * 60,
-		},
-	})
-)
+	router.use(
+		session({
+			store: new RedisStore({ client: redisClient }),
+			secret: ENV.sessionKey,
+			resave: false,
+			saveUninitialized: false,
+			cookie: {
+				secure: true,
+				maxAge: 1000 * 60 * 60,
+			},
+		})
+	)
 
-router.use(passport.initialize())
-router.use(passport.session())
+	router.use(passport.initialize())
+	router.use(passport.session())
+}
 
 router.get("/", async (req, res) => {
 	const key = `service=${req.sessionID}`
@@ -142,4 +146,8 @@ router.get("/logout", (req, res) => {
 	})
 })
 
-export default router
+export function Router() {
+	Init()
+
+	return router
+}
