@@ -1,6 +1,6 @@
 import express from "express"
 import { createServer } from "http"
-import * as cookieParser from "cookie-parser"
+import cookieParser from "cookie-parser"
 
 import { Init } from "./db.js"
 import * as log from "./utils/logger.js"
