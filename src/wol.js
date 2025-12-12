@@ -7,7 +7,7 @@ import { ENV } from "./env.js"
 import request from "./utils/request.js"
 
 import * as wss from "./wss.js"
-import { GetFromCache } from "./db.js"
+import { GetFromCache, DeleteFromCache } from "./db.js"
 
 const router = express.Router()
 
@@ -327,7 +327,10 @@ async function startProcessing(req, res) {
 		})
 	}
 
-	const originalUrl = await GetFromCache(`service=${sessionID}`)
+	const key = `service=${sessionID}`
+	const originalUrl = await GetFromCache(key)
+
+	await DeleteFromCache(key)
 
 	if (!originalUrl) {
 		return res.json({

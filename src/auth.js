@@ -141,8 +141,6 @@ function Init() {
 			},
 			service: serviceUrl,
 		})
-
-		await DeleteFromCache(key)
 	})
 
 	router.get("/auth", passport.authenticate("oauth2"))
