@@ -226,8 +226,8 @@ async function trySendWoLPackets(client, hosts, serviceUrl) {
 		}
 
 		const wsProtocol = targetURL.protocol === "https:" ? "wss" : "ws"
-		const wsURL = `${wsProtocol}://${targetURL.host}/ws?client_id=${responseData.client_id}`
-		const ws = new WebSocket(wsURL)
+		const wsUrl = `${wsProtocol}://${targetURL.host}/ws?client_id=${responseData.client_id}`
+		const ws = new WebSocket(wsUrl)
 
 		await new Promise((resolve, reject) => {
 			ws.once("open", resolve)
@@ -416,7 +416,7 @@ function errorClient(ws, err) {
 export function Router() {
 	loadConfig()
 
+	router.get("/start", async (req, res) => await startProcessing(req, res))
+
 	return router
 }
-
-router.get("/start", async (req, res) => await startProcessing(req, res))
