@@ -23,7 +23,7 @@ app.use((req, res, next) => {
 		return res.status(200).end()
 	}
 
-	url = URL.parse(req.url, `${req.protocol}://${req.hostname}`)
+	const url = new URL(req.url, `${req.protocol}://${req.hostname}`)
 
 	log.logger.info(`${req.method} ${url.pathname} ${url.search}`)
 	next()

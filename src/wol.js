@@ -110,7 +110,7 @@ function getDataFromHost(host, serviceUrl) {
 	switch (type) {
 		case HostType.PHYSICAL:
 			const wolUrl = host.url || ENV.wolURL
-			const wolURL = URL.parse(wolUrl)
+			const wolURL = new URL(wolUrl)
 
 			if (!wolURL) {
 				return null
@@ -128,7 +128,7 @@ function getDataFromHost(host, serviceUrl) {
 		case HostType.VIRTUAL:
 			const virtualUrl = host.url || `http://${host.ip}:${ENV.vePort}/wake`
 
-			const virtualURL = URL.parse(virtualUrl)
+			const virtualURL = new URL(virtualUrl)
 
 			if (!virtualURL) {
 				return null
@@ -145,13 +145,13 @@ function getDataFromHost(host, serviceUrl) {
 		case HostType.DOCKER:
 			const woldUrl = host.url || `http://${host.ip}:${ENV.woldPort}/wake`
 
-			const woldURL = URL.parse(woldUrl)
+			const woldURL = new URL(woldUrl)
 
 			if (!woldURL) {
 				return null
 			}
 
-			const serviceURL = URL.parse(serviceUrl)
+			const serviceURL = new URL(serviceUrl)
 
 			if (!serviceURL) {
 				return null
@@ -194,7 +194,7 @@ async function trySendWoLPackets(client, hosts, serviceUrl) {
 		}
 
 		const targetUrl = data.url
-		const targetURL = URL.parse(targetUrl)
+		const targetURL = new URL(targetUrl)
 
 		if (!targetURL) {
 			logger.error("Could not parse target url: ", host)
@@ -416,7 +416,7 @@ function errorClient(ws, err) {
 export function Router() {
 	loadConfig()
 
-	router.get("/start", async (req, res) => await startProcessing(req, res))
-
 	return router
 }
+
+router.get("/start", async (req, res) => await startProcessing(req, res))
