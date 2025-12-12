@@ -15,8 +15,7 @@ const {
 	WriteToCache,
 	DeleteFromCache,
 } = require("./db")
-const connectRedis = require("connect-redis")
-const RedisStore = connectRedis(session)
+const { RedisStore } = require("connect-redis")
 
 const redirectURL = new URL(ENV.redirectURL)
 
@@ -81,7 +80,7 @@ passport.deserializeUser((user, done) => done(null, user))
 
 router.use(
 	session({
-		store: new RedisStore({ redisClient }),
+		store: new RedisStore({ client: redisClient }),
 		secret: process.env.SESSION_SECRET,
 		resave: false,
 		saveUninitialized: false,
