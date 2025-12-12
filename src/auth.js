@@ -47,6 +47,8 @@ passport.use(
 				const userInfo = await fetchUserInfo(accessToken)
 
 				const username = userInfo.username || userInfo.preferred_username
+				const email = userInfo.email
+				const locale = userInfo.locale
 
 				if (!username) {
 					return done(new Error("No username provided by IDP"))
@@ -55,6 +57,8 @@ passport.use(
 				return done(null, {
 					accessToken,
 					username,
+					email,
+					locale,
 					rawUserInfo: userInfo,
 				})
 			} catch (err) {
@@ -115,7 +119,11 @@ router.get("/", (req, res) => {
 	}
 
 	return res.render("home", {
-		username: req.user.username,
+		user: {
+			name: req.user.username,
+			locale: req.user.locale,
+			email: req.user.email,
+		},
 		redirect: redirectURL.toString(),
 	})
 })
