@@ -116,7 +116,7 @@ router.get("/", async (req, res) => {
 		return res.redirect("/auth")
 	}
 
-	return res.render("home", {
+	res.render("home", {
 		user: {
 			name: req.user.username,
 			locale: req.user.locale,
@@ -124,6 +124,8 @@ router.get("/", async (req, res) => {
 		},
 		service: serviceUrl,
 	})
+
+	await DeleteFromCache(key)
 })
 
 router.get("/auth", passport.authenticate("oauth2"))
