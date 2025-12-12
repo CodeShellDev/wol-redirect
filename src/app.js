@@ -15,9 +15,10 @@ if (log.logger.level != env.ENV.logLevel) {
 	log.Init(env.ENV.logLevel)
 }
 
+app.use(express.static("public"))
+
 app.set("view engine", "ejs")
 app.set("trust proxy", true)
-app.use(express.static("public"))
 
 app.use((req, res, next) => {
 	res.setHeader("X-Redirect-Service", "1")
