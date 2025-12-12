@@ -39,7 +39,7 @@ log.Log()
 
 await Init()
 
-app.use("/", auth)
+app.use("/", auth())
 app.use((err, req, res, next) => {
 	log.logger.error(err)
 	res.status(500).send("Encountered an unexpected error")
@@ -47,7 +47,7 @@ app.use((err, req, res, next) => {
 
 const server = createServer(app)
 
-Attach(server, app, wol)
+Attach(server, app, wol())
 
 server.listen(env.ENV.port, () => {
 	log.logger.info(`Server running on Port ${ENV.port}`)
