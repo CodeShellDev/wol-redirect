@@ -7,7 +7,7 @@ import * as env from "./env.js"
 
 import { Router as auth } from "./auth.js"
 import { Router as wol } from "./wol.js"
-import * as wss from "./wss.js"
+import { Attach } from "./wss.js"
 
 const app = express()
 
@@ -47,7 +47,7 @@ app.use((err, req, res, next) => {
 
 const server = createServer(app)
 
-wss.Attach(server, app, wol)
+Attach(server, app, wol)
 
 server.listen(env.ENV.port, () => {
 	log.logger.info(`Server running on Port ${ENV.port}`)
