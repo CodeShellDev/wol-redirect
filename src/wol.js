@@ -310,6 +310,8 @@ async function waitForHostUp(url, options = {}) {
 }
 
 async function startProcessing(req, res) {
+	logger.dev("Starting process...")
+
 	if (!req.isAuthenticated()) {
 		return res.json({
 			error: true,
