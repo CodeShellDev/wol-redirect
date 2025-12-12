@@ -114,7 +114,7 @@ function Init() {
 
 			await WriteToCache(key, originalUrl)
 
-			logger.dev("Cached ", originalUrl, " under ", key)
+			logger.dev("Cached " + originalUrl + " under " + key)
 
 			return res.redirect(`${redirectURL.origin}`)
 		}
