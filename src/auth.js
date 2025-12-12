@@ -1,6 +1,5 @@
 import * as express from "express"
 import { v4 as uuidv4 } from "uuid"
-import * as cookieParser from "cookie-parser"
 
 import session from "express-session"
 import { RedisStore } from "connect-redis"
@@ -83,8 +82,6 @@ function Init() {
 
 	passport.serializeUser((user, done) => done(null, user))
 	passport.deserializeUser((user, done) => done(null, user))
-
-	router.use(cookieParser(ENV.cookieKey))
 
 	router.use(
 		session({
