@@ -239,14 +239,21 @@
 
 			<div class="middle-row">
 				<h1 id="title">Starting Service</h1>
-				<h3 id="subtitle">You will be Redirected shortly</h3>
+				<h3 id="subtitle">Initializing startup...</h3>
 			</div>
 
 			<div class="bottom-row">
-				<p id="log"></p>
+				<p id="output"></p>
 			</div>
 		</div>
-		<script>
+		<script type="module">
+			import { startWoLProcess } from "./js/wol.js"
+
+			const output = document.getElementById("output")
+
+			const title = document.getElementById("title")
+			const subtitle = document.getElementById("subtitle")
+
 			function changeAnimation(id, newId) {
 				const element = document.getElementById(id)
 				if (element) element.id = newId
@@ -254,79 +261,23 @@
 
 			function handleError({
 				host = "Server",
-				message = "Something went wrong",
+				msg = "Something went wrong",
 			} = {}) {
-				const titleText = document.getElementById("title")
-				const subTitleText = document.getElementById("subtitle")
-
 				setTimeout(() => {
 					changeAnimation("spin", "cross-line")
 					changeAnimation("hide", "add-line")
 
-					titleText.textContent = message
-					subTitleText.textContent = `${host} seems to be unreachable`
-				}, 1000)
+					title.textContent = msg
+					subtitle.textContent = `${host} seems to be unreachable`
+				}, 250)
 			}
 
-			async function startRedirectProcess() {
-				const logEl = document.getElementById("log")
-				const subTitleText = document.getElementById("subtitle")
+			function handleSubtitle(msg) {
+				subtitle.textContent = msg
+			}
 
-				logEl.textContent = ""
-				subTitleText.textContent = "Initializing startup..."
-
-				try {
-					const response = await fetch("/start")
-					if (!response.ok) throw new Error(`HTTP error ${response.status}`)
-
-					const data = await response.json()
-					const clientID = data.client_id
-					if (!clientID) throw new Error("No client_id returned from server")
-
-					logEl.textContent += "Process started. Waiting for service...\n"
-
-					const protocol = location.protocol === "https:" ? "wss" : "ws"
-					const ws = new WebSocket(
-						`${protocol}://${location.host}/ws?client_id=${clientID}`
-					)
-
-					ws.onopen = () => {
-						logEl.textContent += "WebSocket connected.\n"
-					}
-
-					ws.onmessage = (event) => {
-						const msg = JSON.parse(event.data)
-
-						if (msg.message) {
-							logEl.textContent += msg.message + "\n"
-						}
-
-						if (!msg.error && msg.url) {
-							logEl.textContent += "Service is online! Redirecting...\n"
-							ws.close()
-							window.location.href = msg.url
-						}
-
-						if (msg.error) {
-							logEl.textContent += "Error occurred while starting service.\n"
-							ws.close()
-							handleError()
-						}
-					}
-
-					ws.onerror = (err) => {
-						logEl.textContent += "WebSocket connection failed.\n"
-						handleError()
-					}
-
-					ws.onclose = () => {
-						logEl.textContent += "WebSocket closed.\n"
-					}
-				} catch (err) {
-					console.log(err)
-					logEl.textContent += "Failed to start process: " + err.message + "\n"
-					handleError()
-				}
+			function handleOutput(msg) {
+				output.textContent += msg + "\n"
 			}
 
 			const prefersDark = window.matchMedia(
@@ -334,7 +285,27 @@
 			).matches
 			document.body.setAttribute("data-theme", prefersDark ? "dark" : "light")
 
-			window.addEventListener("DOMContentLoaded", startRedirectProcess)
+			const onload = () => {
+				startWoLProcess({
+					outputHandler: handleOutput,
+					errorHandler: (msg) => {
+						handleError()
+					},
+					onwsopen: () => {
+						handleSubtitle("Starting process...")
+						handleOutput("WebSocket connected.")
+					},
+					onsuccess: (ws, msg) => {
+						outputHandler("Service is online! Redirecting...")
+						ws.close()
+						setTimeout(() => {
+							window.location.href = msg.url
+						}, 250)
+					},
+				})
+			}
+
+			window.addEventListener("DOMContentLoaded", onload)
 		</script>
 	</body>
 </html>

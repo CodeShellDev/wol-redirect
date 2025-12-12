@@ -1,0 +1,73 @@
+export async function startWoLProcess({
+	endpoint = "/start",
+	onwsopen = () => {
+		outputHandler("WebSocket connected.")
+	},
+	onwserror = (err) => {
+		outputHandler("WebSocket connection failed.")
+		errorHandler(err)
+	},
+	onwsclose = () => {
+		outputHandler("WebSocket closed.")
+	},
+	onerror = (ws, msg) => {
+		outputHandler("Failed to start service.")
+		ws.close()
+		errorHandler(msg.message)
+	},
+	onmessage = (ws, msg) => {
+		outputHandler(msg.message)
+	},
+	onsuccess = (ws, msg) => {
+		outputHandler("Service is online! Redirecting...")
+		ws.close()
+		window.location.href = msg.url
+	},
+	errorHandler = (msg) => {
+		console.error(msg)
+	},
+	outputHandler = (msg) => {
+		console.log(msg)
+	},
+}) {
+	try {
+		const response = await fetch(endpoint)
+		if (!response.ok) throw new Error(`HTTP error ${response.status}`)
+
+		const data = await response.json()
+		const clientID = data.client_id
+		if (!clientID) throw new Error("No client_id returned from server")
+
+		logEl.textContent += "Process started. Waiting for service...\n"
+
+		const protocol = location.protocol === "https:" ? "wss" : "ws"
+		const ws = new WebSocket(
+			`${protocol}://${location.host}/ws?client_id=${clientID}`
+		)
+
+		ws.onopen = onwsopen
+
+		ws.onmessage = (event) => {
+			const msg = JSON.parse(event.data)
+
+			if (msg.message) {
+				onmessage(ws, msg)
+			}
+
+			if (!msg.error && msg.url) {
+				onsuccess(ws, msg)
+			}
+
+			if (msg.error) {
+				onerror(ws, msg)
+			}
+		}
+
+		ws.onerror = onwserror
+
+		ws.onclose = onwsclose
+	} catch (err) {
+		outputHandler(`Failed to start process: ${err.message}`)
+		errorHandler(err.message)
+	}
+}
