@@ -45,9 +45,14 @@ async function DeleteFromCache(key, { hash = false } = {}) {
 	}
 }
 
+async function Close() {
+	await redisClient.quit()
+}
+
 module.exports = {
 	redisClient,
 	Init,
+	Close,
 	GetFromCache,
 	WriteToCache,
 	DeleteFromCache,
