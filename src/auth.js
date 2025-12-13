@@ -126,18 +126,15 @@ function registerOauth() {
 			})
 		}
 
-		let handled
 		if (req.hostname !== redirectURL.hostname) {
-			handled = await handleServiceUrl(req, res)
+			return handleServiceUrl(req, res)
 		}
 
 		if (!req.isAuthenticated()) {
 			return res.redirect("/auth")
 		}
 
-		if (!handled) {
-			next()
-		}
+		next()
 	})
 
 	router.get("/auth", passport.authenticate("oauth2"))
@@ -164,13 +161,11 @@ function registerFakeAuth() {
 				sameSite: "lax",
 				maxAge: 1000 * 60 * 60,
 			})
+		} else {
+			return await handleServiceUrl(req, res)
 		}
 
-		const handled = await handleServiceUrl(req, res)
-
-		if (!handled) {
-			next()
-		}
+		next()
 	})
 
 	router.get("/auth", (req, res) => {
