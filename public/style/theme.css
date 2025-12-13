@@ -52,6 +52,7 @@ html[data-theme="light"] {
 
 .theme-toggle #sun,
 .theme-toggle #moon {
+	color: var(--icon-color);
 	display: none;
 }
 
