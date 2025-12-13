@@ -2,6 +2,8 @@ html[data-theme="dark"] {
 	--bg-color: #211f1f;
 	--dot-color: #ffffff;
 
+	--icon-color: #ffffff;
+
 	--card-color: #1a1919;
 
 	--text-color: #ffffff;
@@ -15,6 +17,8 @@ html[data-theme="dark"] {
 html[data-theme="light"] {
 	--bg-color: #ffffff;
 	--dot-color: #2a2a2a;
+
+	--icon-color: #1a1a1a;
 
 	--card-color: #ffffff;
 
@@ -34,7 +38,7 @@ html[data-theme="light"] {
 
 	aspect-ratio: 1 / 1;
 
-	height: clamp(50px, 6vmin, 60px);
+	height: clamp(50px / 1.5, 6vmin / 1.5, 60px / 1.5);
 
 	background: var(--card-color);
 	border-radius: 16px;
@@ -48,24 +52,13 @@ html[data-theme="light"] {
 
 .theme-toggle #sun,
 .theme-toggle #moon {
-	position: absolute;
 	display: none;
 }
 
 html[data-theme="light"] .theme-toggle #moon {
 	display: block;
-	transform: scale(1);
-}
-
-html[data-theme="light"] .theme-toggle #sun {
-	transform: scale(0.8);
 }
 
 html[data-theme="dark"] .theme-toggle #sun {
 	display: block;
-	transform: scale(1);
-}
-
-html[data-theme="dark"] .theme-toggle #moon {
-	transform: scale(0.8);
 }
