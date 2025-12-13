@@ -30,7 +30,7 @@ body[data-theme="light"] {
 	position: absolute;
 
 	top: 15px;
-	right: 15px;
+	left: 15px;
 
 	aspect-ratio: 1 / 1;
 
