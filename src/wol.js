@@ -440,4 +440,45 @@ export function Router() {
 	return router
 }
 
+router.get("/", async (req, res) => {
+	if (req.query.session_id) {
+		res.cookie("session_id", req.query.session_id, {
+			domain: redirectURL.hostname,
+			httpOnly: true,
+			secure: true,
+			sameSite: "lax",
+			maxAge: 1000 * 60 * 60,
+		})
+	}
+
+	if (req.hostname !== redirectURL.hostname) {
+		const originalHost = req.headers["x-forwarded-host"] || req.get("host")
+		const originalProto = req.headers["x-forwarded-proto"] || req.protocol
+		const originalUri = req.headers["x-forwarded-uri"] || req.originalUrl
+
+		const originalUrl = `${originalProto}://${originalHost}${originalUri}`
+
+		const sessionID = uuidv4()
+
+		await WriteToCache(`service=${sessionID}`, originalUrl)
+
+		return res.redirect(`${redirectURL.origin}/?session_id=${sessionID}`)
+	}
+
+	if (!req.isAuthenticated()) {
+		return res.redirect("/auth")
+	}
+
+	const serviceUrl = await GetFromCache(`service=${req.query.session_id}`)
+
+	res.render("home", {
+		user: {
+			name: req.user.username,
+			locale: req.user.locale,
+			email: req.user.email,
+		},
+		serviceUrl: serviceUrl,
+	})
+})
+
 router.get("/start", async (req, res) => await startProcessing(req, res))

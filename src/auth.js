@@ -41,9 +41,7 @@ async function fetchUserInfo(accessToken) {
 	}
 }
 
-function Init() {
-	redirectURL = new URL(ENV.redirectURL)
-
+function registerOauth() {
 	passport.use(
 		new OAuth2Strategy(
 			{
@@ -83,64 +81,8 @@ function Init() {
 	passport.serializeUser((user, done) => done(null, user))
 	passport.deserializeUser((user, done) => done(null, user))
 
-	router.use(
-		session({
-			store: new RedisStore({ client: redisClient }),
-			secret: ENV.sessionKey,
-			resave: false,
-			saveUninitialized: false,
-			cookie: {
-				domain: redirectURL.hostname,
-				secure: true,
-				sameSite: "lax",
-				maxAge: 1000 * 60 * 60,
-			},
-		})
-	)
-
 	router.use(passport.initialize())
 	router.use(passport.session())
-
-	router.get("/", async (req, res) => {
-		if (req.query.session_id) {
-			res.cookie("session_id", req.query.session_id, {
-				domain: redirectURL.hostname,
-				httpOnly: true,
-				secure: true,
-				sameSite: "lax",
-				maxAge: 1000 * 60 * 60,
-			})
-		}
-
-		if (req.hostname !== redirectURL.hostname) {
-			const originalHost = req.headers["x-forwarded-host"] || req.get("host")
-			const originalProto = req.headers["x-forwarded-proto"] || req.protocol
-			const originalUri = req.headers["x-forwarded-uri"] || req.originalUrl
-
-			const originalUrl = `${originalProto}://${originalHost}${originalUri}`
-
-			const sessionID = uuidv4()
-
-			await WriteToCache(`service=${sessionID}`, originalUrl)
-
-			return res.redirect(`${redirectURL.origin}/?session_id=${sessionID}`)
-		}
-
-		if (!req.isAuthenticated()) {
-			return res.redirect("/auth")
-		}
-
-		const serviceUrl = await GetFromCache(`service=${req.query.session_id}`)
-
-		res.render("home", {
-			user: {
-				name: req.user.username,
-				locale: req.user.locale,
-				email: req.user.email,
-			},
-			serviceUrl: serviceUrl,
-		})
-	})
 
 	router.get("/auth", passport.authenticate("oauth2"))
 
@@ -157,8 +99,52 @@ function Init() {
 	})
 }
 
+function registerFakeAuth() {
+	router.get("/auth", (req, res) => {
+		if (!req.session.user) {
+			req.session.user = {
+				username: "user",
+				email: "",
+				locale: "",
+				accessToken: null,
+			}
+		}
+
+		req.user = req.session.user
+
+		req.isAuthenticated = () => true
+	})
+
+	router.get("/logout", (req, res) => {
+		if (!req.isAuthenticated()) return
+
+		req.session.destroy()
+	})
+}
+
 export function Router() {
-	Init()
+	redirectURL = new URL(ENV.redirectURL)
+
+	router.use(
+		session({
+			store: new RedisStore({ client: redisClient }),
+			secret: ENV.sessionKey,
+			resave: false,
+			saveUninitialized: false,
+			cookie: {
+				domain: redirectURL.hostname,
+				secure: true,
+				sameSite: "lax",
+				maxAge: 1000 * 60 * 60,
+			},
+		})
+	)
+
+	if (ENV.useOauth) {
+		registerOauth()
+	} else {
+		registerFakeAuth()
+	}
 
 	return router
 }

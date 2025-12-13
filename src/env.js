@@ -6,7 +6,9 @@ export const ENV = {
 	configPath: "/app/config/mapping.json",
 	port: "6789",
 	logLevel: "info",
+
 	exposeLogs: true,
+	useOauth: true,
 
 	redisHost: "redis",
 	redisPort: "6379",
@@ -51,7 +53,11 @@ export function Load() {
 
 	ENV.woldQueryPattern = process.env.WOLD_QUERY_PATTERN || ""
 
-	ENV.exposeLogs = process.env.EXPOSE_LOGS || ENV.exposeLogs
+	const exposeLogs = process.env.EXPOSE_LOGS
+
+	if (exposeLogs) {
+		ENV.exposeLogs = exposeLogs.trim().toLowerCase() == "true"
+	}
 
 	ENV.wolURL = process.env.WOL_URL || ""
 
@@ -68,37 +74,45 @@ export function Load() {
 		logger.fatal("No session key provided")
 	}
 
-	ENV.authorizationURL = process.env.AUTHORIZATION_URL || ""
-	ENV.resourceURL = process.env.RESOURCE_URL || ""
-	ENV.logoutURL = process.env.LOGOUT_URL || ""
-	ENV.tokenURL = process.env.TOKEN_URL || ""
-	ENV.redirectURL = process.env.REDIRECT_URL || ""
+	const useOauth = process.env.USE_OAUTH
 
-	if (!ENV.authorizationURL) {
-		logger.fatal("No authorization URL set")
-	}
-	if (!ENV.resourceURL) {
-		logger.fatal("No resource URL set")
-	}
-	if (!ENV.logoutURL) {
-		logger.fatal("No logout URL set")
-	}
-	if (!ENV.tokenURL) {
-		logger.fatal("No token URL set")
-	}
-	if (!ENV.redirectURL) {
-		logger.fatal("No redirect URL set")
+	if (useOauth) {
+		ENV.useOauth = useOauth.trim().toLowerCase() == "true"
 	}
 
-	ENV.clientID = process.env.CLIENT_ID || ""
-	ENV.clientSecret = process.env.CLIENT_SECRET || ""
-	ENV.scope = process.env.SCOPE || ENV.scope
+	if (ENV.useOauth) {
+		ENV.authorizationURL = process.env.AUTHORIZATION_URL || ""
+		ENV.resourceURL = process.env.RESOURCE_URL || ""
+		ENV.logoutURL = process.env.LOGOUT_URL || ""
+		ENV.tokenURL = process.env.TOKEN_URL || ""
+		ENV.redirectURL = process.env.REDIRECT_URL || ""
 
-	if (!ENV.clientID) {
-		logger.fatal("No client id provided")
-	}
-	if (!ENV.clientSecret) {
-		logger.fatal("No client secret provided")
+		if (!ENV.authorizationURL) {
+			logger.fatal("No authorization URL set")
+		}
+		if (!ENV.resourceURL) {
+			logger.fatal("No resource URL set")
+		}
+		if (!ENV.logoutURL) {
+			logger.fatal("No logout URL set")
+		}
+		if (!ENV.tokenURL) {
+			logger.fatal("No token URL set")
+		}
+		if (!ENV.redirectURL) {
+			logger.fatal("No redirect URL set")
+		}
+
+		ENV.clientID = process.env.CLIENT_ID || ""
+		ENV.clientSecret = process.env.CLIENT_SECRET || ""
+		ENV.scope = process.env.SCOPE || ENV.scope
+
+		if (!ENV.clientID) {
+			logger.fatal("No client id provided")
+		}
+		if (!ENV.clientSecret) {
+			logger.fatal("No client secret provided")
+		}
 	}
 
 	logger.info("Loaded Environment")
