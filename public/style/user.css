@@ -17,10 +17,13 @@
 }
 
 .profile {
+	display: flex;
+	align-self: center;
 	text-align: center;
+	justify-content: center;
 
-	margin: 3px;
-	padding: 1px;
+	margin: 3px 3px 3px 3px;
+	padding: 1px 1px 1px 1px;
 
 	border-radius: 360px;
 	aspect-ratio: 1 / 1;
