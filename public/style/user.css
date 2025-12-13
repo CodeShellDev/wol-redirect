@@ -17,11 +17,7 @@
 }
 
 .profile {
-	display: flex;
-	flex-direction: column;
-	align-self: center;
 	text-align: center;
-	justify-content: center;
 
 	margin: 3px;
 	padding: 1px;
