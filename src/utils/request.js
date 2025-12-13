@@ -8,10 +8,6 @@ async function post(url, data) {
 			body: JSON.stringify(data),
 		})
 
-		if (!response.ok) {
-			throw new Error(`${url} returned HTTP ${response.status}`)
-		}
-
 		return response
 	} catch (err) {
 		if (!err.cause) {
@@ -28,10 +24,6 @@ async function post(url, data) {
 async function get(url, options) {
 	try {
 		const response = await fetch(url, options)
-
-		if (!response.ok) {
-			throw new Error(`${url} returned HTTP ${response.status}`)
-		}
 
 		return response
 	} catch (err) {
