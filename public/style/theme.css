@@ -49,11 +49,11 @@ html[data-theme="light"] {
 .theme-toggle #sun,
 .theme-toggle #moon {
 	position: absolute;
-	opacity: 0;
+	display: none;
 }
 
 html[data-theme="light"] .theme-toggle #moon {
-	opacity: 1;
+	display: block;
 	transform: scale(1);
 }
 
@@ -62,7 +62,7 @@ html[data-theme="light"] .theme-toggle #sun {
 }
 
 html[data-theme="dark"] .theme-toggle #sun {
-	opacity: 1;
+	display: block;
 	transform: scale(1);
 }
 
