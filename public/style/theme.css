@@ -46,26 +46,26 @@ html[data-theme="light"] {
 	-webkit-backdrop-filter: blur(18px);
 }
 
-.sun,
-.moon {
+.theme-toggle #sun,
+.theme-toggle #moon {
 	position: absolute;
 	opacity: 0;
 }
 
-html[data-theme="light"] .moon {
+html[data-theme="light"] .theme-toggle #moon {
 	opacity: 1;
 	transform: scale(1);
 }
 
-html[data-theme="light"] .sun {
+html[data-theme="light"] .theme-toggle #sun {
 	transform: scale(0.8);
 }
 
-html[data-theme="dark"] .sun {
+html[data-theme="dark"] .theme-toggle #sun {
 	opacity: 1;
 	transform: scale(1);
 }
 
-html[data-theme="dark"] .moon {
+html[data-theme="dark"] .theme-toggle #moon {
 	transform: scale(0.8);
 }
