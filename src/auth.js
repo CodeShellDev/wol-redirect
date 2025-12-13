@@ -179,6 +179,10 @@ function registerFakeAuth() {
 			return await handleServiceUrl(req, res)
 		}
 
+		if (!req.isAuthenticated()) {
+			return res.redirect("/auth")
+		}
+
 		next()
 	})
 
