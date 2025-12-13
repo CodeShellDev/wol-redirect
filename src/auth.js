@@ -42,6 +42,8 @@ async function fetchUserInfo(accessToken) {
 }
 
 function registerOauth() {
+	redirectURL = new URL(ENV.redirectURL)
+
 	passport.use(
 		new OAuth2Strategy(
 			{
@@ -80,6 +82,21 @@ function registerOauth() {
 
 	passport.serializeUser((user, done) => done(null, user))
 	passport.deserializeUser((user, done) => done(null, user))
+
+	router.use(
+		session({
+			store: new RedisStore({ client: redisClient }),
+			secret: ENV.sessionKey,
+			resave: false,
+			saveUninitialized: false,
+			cookie: {
+				domain: redirectURL.hostname,
+				secure: true,
+				sameSite: "lax",
+				maxAge: 1000 * 60 * 60,
+			},
+		})
+	)
 
 	router.use(passport.initialize())
 	router.use(passport.session())
@@ -123,23 +140,6 @@ function registerFakeAuth() {
 }
 
 export function Router() {
-	redirectURL = new URL(ENV.redirectURL)
-
-	router.use(
-		session({
-			store: new RedisStore({ client: redisClient }),
-			secret: ENV.sessionKey,
-			resave: false,
-			saveUninitialized: false,
-			cookie: {
-				domain: redirectURL.hostname,
-				secure: true,
-				sameSite: "lax",
-				maxAge: 1000 * 60 * 60,
-			},
-		})
-	)
-
 	if (ENV.useOauth) {
 		registerOauth()
 	} else {
