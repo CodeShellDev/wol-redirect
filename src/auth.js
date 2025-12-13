@@ -167,6 +167,16 @@ function registerFakeAuth() {
 		})
 	)
 
+	router.use((req, res, next) => {
+		if (req.session?.user) {
+			req.user = req.session.user
+			req.isAuthenticated = () => true
+		} else {
+			req.isAuthenticated = () => false
+		}
+		next()
+	})
+
 	router.get("/", async (req, res, next) => {
 		if (req.query.session_id) {
 			res.cookie("session_id", req.query.session_id, {
@@ -179,7 +189,7 @@ function registerFakeAuth() {
 			return await handleServiceUrl(req, res)
 		}
 
-		if (!req.isAuthenticated) {
+		if (!req.isAuthenticated()) {
 			return res.redirect("/auth")
 		}
 
@@ -187,18 +197,13 @@ function registerFakeAuth() {
 	})
 
 	router.get("/auth", (req, res) => {
-		if (!req.session.user) {
-			req.session.user = {
-				username: "user",
-				email: "",
-				locale: "",
-				accessToken: null,
-			}
+		req.session.user = {
+			username: "user",
+			email: "",
+			locale: "",
 		}
 
-		req.user = req.session.user
-
-		req.isAuthenticated = () => true
+		return res.redirect("/")
 	})
 
 	router.get("/logout", (req, res) => {
