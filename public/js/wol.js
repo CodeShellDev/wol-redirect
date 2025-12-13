@@ -5,7 +5,7 @@ export async function startWoLProcess({
 	},
 	onwserror = (err) => {
 		outputHandler("WebSocket connection failed")
-		errorHandler(err)
+		errorHandler()
 	},
 	onwsclose = () => {
 		outputHandler("WebSocket closed")
