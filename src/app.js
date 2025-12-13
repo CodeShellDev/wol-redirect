@@ -44,6 +44,8 @@ await Init()
 app.use(cookieParser())
 
 app.use("/", auth())
+app.use("/", wol())
+
 app.use((err, req, res, next) => {
 	log.logger.error(err)
 	res.status(500).send("Encountered an unexpected error")
@@ -51,7 +53,7 @@ app.use((err, req, res, next) => {
 
 const server = createServer(app)
 
-Attach(server, app, wol())
+Attach(server)
 
 server.listen(env.ENV.port, () => {
 	log.logger.info(`Server running on Port ${env.ENV.port}`)

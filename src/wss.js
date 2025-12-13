@@ -6,7 +6,7 @@ const clients = {}
 
 let wss = null
 
-export function Attach(server, app, router) {
+export function Attach(server) {
 	wss = new WebSocketServer({ server })
 
 	wss.on("connection", (socket, req) => {
@@ -46,8 +46,6 @@ export function Attach(server, app, router) {
 			delete clients[clientID]
 		})
 	})
-
-	app.use("/", router)
 }
 
 export function WaitForClient(clientID, timeout = 5000) {

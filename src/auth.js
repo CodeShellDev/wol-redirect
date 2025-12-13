@@ -41,6 +41,20 @@ async function fetchUserInfo(accessToken) {
 	}
 }
 
+async function handleServiceUrl(req, res) {
+	const originalHost = req.headers["x-forwarded-host"] || req.get("host")
+	const originalProto = req.headers["x-forwarded-proto"] || req.protocol
+	const originalUri = req.headers["x-forwarded-uri"] || req.originalUrl
+
+	const originalUrl = `${originalProto}://${originalHost}${originalUri}`
+
+	const sessionID = uuidv4()
+
+	await WriteToCache(`service=${sessionID}`, originalUrl)
+
+	return res.redirect(`${redirectURL.origin}/?session_id=${sessionID}`)
+}
+
 function registerOauth() {
 	redirectURL = new URL(ENV.redirectURL)
 
@@ -101,6 +115,28 @@ function registerOauth() {
 	router.use(passport.initialize())
 	router.use(passport.session())
 
+	router.get("/", async (req, res, next) => {
+		if (req.query.session_id) {
+			res.cookie("session_id", req.query.session_id, {
+				domain: redirectURL.hostname,
+				httpOnly: true,
+				secure: true,
+				sameSite: "lax",
+				maxAge: 1000 * 60 * 60,
+			})
+		}
+
+		if (req.hostname !== redirectURL.hostname) {
+			await handleServiceUrl(req, res)
+		}
+
+		if (!req.isAuthenticated()) {
+			return res.redirect("/auth")
+		}
+
+		next()
+	})
+
 	router.get("/auth", passport.authenticate("oauth2"))
 
 	router.get("/auth/callback", passport.authenticate("oauth2"), (req, res) =>
@@ -117,6 +153,21 @@ function registerOauth() {
 }
 
 function registerFakeAuth() {
+	router.get("/", async (req, res, next) => {
+		if (req.query.session_id) {
+			res.cookie("session_id", req.query.session_id, {
+				httpOnly: true,
+				secure: true,
+				sameSite: "lax",
+				maxAge: 1000 * 60 * 60,
+			})
+		}
+
+		await handleServiceUrl(req, res)
+
+		next()
+	})
+
 	router.get("/auth", (req, res) => {
 		if (!req.session.user) {
 			req.session.user = {
