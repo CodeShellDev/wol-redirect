@@ -52,7 +52,7 @@ async function handleServiceUrl(req, res) {
 
 	await WriteToCache(`service=${sessionID}`, originalUrl)
 
-	return res.redirect(`${redirectURL.origin}/?session_id=${sessionID}`)
+	return res.redirect(`/?session_id=${sessionID}`)
 }
 
 function registerOauth() {
