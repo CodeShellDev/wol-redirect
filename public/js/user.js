@@ -14,3 +14,10 @@ export function getProfileColor(
 
 	return `hsl(${hue}, ${saturation}%, ${lightness}%)`
 }
+
+export function setUser(userData, query = ".user .profile") {
+	const userProfile = document.querySelector(query)
+
+	userProfile.textContent = userData.name.substring(0, 2).toUpperCase()
+	userProfile.style.backgroundColor = getProfileColor(userData.name)
+}

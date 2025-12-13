@@ -4,6 +4,12 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+		<script type="module">
+			import { applyInitialTheme } from "/js/theme.js"
+			applyInitialTheme()
+		</script>
+
+		<link rel="stylesheet" href="style/theme.css" />
 		<link rel="stylesheet" href="style/default.css" />
 		<link rel="stylesheet" href="style/user.css" />
 
@@ -28,13 +34,19 @@
 			</div>
 		</div>
 
+		<button class="theme-toggle" type="button">
+			<span class="sun" aria-hidden="true">☀️</span>
+			<span class="moon" aria-hidden="true">🌙</span>
+		</button>
+
 		<div class="user">
 			<div class="profile"></div>
 		</div>
 
 		<script type="module">
-			import { startWoLProcess } from "./js/wol.js"
-			import { getProfileColor } from "./js/user.js"
+			import { startWoLProcess } from "/js/wol.js"
+			import { setUser } from "/js/user.js"
+			import { initToggle } from "/js/theme.js"
 
 			const userData = {
 				name: "<%= user.name %>",
@@ -44,8 +56,6 @@
 
 			const serviceUrl = "<%= serviceUrl %>"
 			const serviceURL = new URL(serviceUrl)
-
-			const userProfile = document.querySelector(".user .profile")
 
 			const output = document.getElementById("output")
 
@@ -81,13 +91,9 @@
 				output.textContent += msg + "\n"
 			}
 
-			const prefersDark = window.matchMedia(
-				"(prefers-color-scheme: dark)"
-			).matches
-			document.body.setAttribute("data-theme", prefersDark ? "dark" : "light")
+			initToggle()
 
-			userProfile.textContent = userData.name.substring(0, 2).toUpperCase()
-			userProfile.style.backgroundColor = getProfileColor(userData.name)
+			setUser(userData)
 
 			const onload = () => {
 				startWoLProcess({
