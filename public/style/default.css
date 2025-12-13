@@ -1,3 +1,31 @@
+body[data-theme="dark"] {
+	--bg-color: #211f1f;
+	--dot-color: #ffffff;
+
+	--card-color: #1a1919;
+
+	--text-color: #ffffff;
+	--secondary-color: #bbbbbb;
+
+	--spinner-color: #4b8264;
+	--spinner-color-transparent: transparent;
+	--line-color: #8f3d3d;
+}
+
+body[data-theme="light"] {
+	--bg-color: #ffffff;
+	--dot-color: #2a2a2a;
+
+	--card-color: #ffffff;
+
+	--text-color: #1a1919;
+	--secondary-color: #555555;
+
+	--spinner-color: #5aa47b;
+	--spinner-color-transparent: transparent;
+	--line-color: #d9534f;
+}
+
 * {
 	margin: 0;
 	padding: 0;
