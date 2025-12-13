@@ -138,7 +138,7 @@ function Init() {
 				locale: req.user.locale,
 				email: req.user.email,
 			},
-			service: serviceUrl,
+			serviceUrl: serviceUrl,
 		})
 	})
 

@@ -1,17 +1,17 @@
 export async function startWoLProcess({
 	endpoint = "/start",
 	onwsopen = () => {
-		outputHandler("WebSocket connected.")
+		outputHandler("WebSocket connected")
 	},
 	onwserror = (err) => {
-		outputHandler("WebSocket connection failed.")
+		outputHandler("WebSocket connection failed")
 		errorHandler(err)
 	},
 	onwsclose = () => {
-		outputHandler("WebSocket closed.")
+		outputHandler("WebSocket closed")
 	},
 	onerror = (ws, msg) => {
-		outputHandler("Failed to start service.")
+		outputHandler("Failed to start service")
 		ws.close()
 		errorHandler(msg.message)
 	},

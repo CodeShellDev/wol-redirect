@@ -42,6 +42,9 @@
 				locale: "<%= user.locale %>",
 			}
 
+			const serviceUrl = "<%= serviceUrl %>"
+			const serviceURL = new URL(serviceUrl)
+
 			const userProfile = document.querySelector(".user .profile")
 
 			const output = document.getElementById("output")
@@ -54,16 +57,19 @@
 				if (element) element.id = newId
 			}
 
-			function handleError({
-				host = "Server",
-				msg = "Something went wrong",
-			} = {}) {
+			function handleError({ host = "Service", msg = "" } = {}) {
+				msg = msg.trim()
+
+				if (msg === "") {
+					msg = `${host} seems to be unreachable`
+				}
+
 				setTimeout(() => {
 					changeAnimation("spin", "cross-line")
 					changeAnimation("hide", "add-line")
 
-					title.textContent = msg
-					subtitle.textContent = `${host} seems to be unreachable`
+					title.textContent = `Something went wrong`
+					subtitle.textContent = msg
 				}, 250)
 			}
 
@@ -87,18 +93,29 @@
 				startWoLProcess({
 					outputHandler: handleOutput,
 					errorHandler: (msg) => {
-						handleError()
+						handleError({
+							msg: msg,
+							host: serviceURL.hostname,
+						})
 					},
 					onwsopen: () => {
 						handleSubtitle("Starting process...")
 						handleOutput("WebSocket connected.")
 					},
 					onsuccess: (ws, msg) => {
-						outputHandler("Service is online! Redirecting...")
-						ws.close()
-						setTimeout(() => {
-							window.location.href = msg.url
-						}, 250)
+						if (msg.url !== serviceUrl) {
+							handleOutput()
+							ws.close()
+							handleError({
+								msg: "Service URL was modified",
+							})
+						} else {
+							handleOutput("Service is online! Redirecting...")
+							ws.close()
+							setTimeout(() => {
+								window.location.href = msg.url
+							}, 250)
+						}
 					},
 				})
 			}
