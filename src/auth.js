@@ -153,6 +153,20 @@ function registerOauth() {
 }
 
 function registerFakeAuth() {
+	router.use(
+		session({
+			store: new RedisStore({ client: redisClient }),
+			secret: ENV.sessionKey,
+			resave: false,
+			saveUninitialized: false,
+			cookie: {
+				secure: true,
+				sameSite: "lax",
+				maxAge: 1000 * 60 * 60,
+			},
+		})
+	)
+
 	router.get("/", async (req, res, next) => {
 		if (req.query.session_id) {
 			res.cookie("session_id", req.query.session_id, {
