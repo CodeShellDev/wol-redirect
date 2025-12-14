@@ -41,7 +41,7 @@ async function fetchUserInfo(accessToken) {
 	}
 }
 
-async function getOriginalUrl(req) {
+function getOriginalUrl(req) {
 	const originalHost = req.headers["x-forwarded-host"] || req.get("host")
 	const originalProto = req.headers["x-forwarded-proto"] || req.protocol
 	const originalUri = req.headers["x-forwarded-uri"] || req.originalUrl
