@@ -123,7 +123,9 @@ function registerOauth() {
 		}
 
 		if (req.hostname !== redirectURL.hostname) {
-			const originalUrl = getOriginalUrl(req, res)
+			const originalUrl = getOriginalUrl(req)
+
+			logger.debug("Cached original url: ", originalUrl)
 
 			const sessionID = uuidv4()
 
@@ -188,7 +190,7 @@ function registerFakeAuth() {
 			}
 		}
 
-		const originalUrl = getOriginalUrl(req, res)
+		const originalUrl = getOriginalUrl(req)
 
 		const sessionID = uuidv4()
 
