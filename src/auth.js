@@ -125,7 +125,7 @@ function registerOauth() {
 		if (req.hostname !== redirectURL.hostname) {
 			const originalUrl = getOriginalUrl(req)
 
-			logger.debug("Cached original url: ", originalUrl)
+			logger.debug("Cached original url: " + originalUrl)
 
 			const sessionID = uuidv4()
 
