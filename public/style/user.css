@@ -18,9 +18,9 @@
 
 .profile {
 	display: flex;
-	align-self: center;
-	text-align: center;
+
 	justify-content: center;
+	align-items: center;
 
 	margin: 3px 3px 3px 3px;
 	padding: 1px 1px 1px 1px;
