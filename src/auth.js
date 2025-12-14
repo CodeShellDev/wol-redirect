@@ -41,18 +41,14 @@ async function fetchUserInfo(accessToken) {
 	}
 }
 
-async function handleServiceUrl(req, res) {
+async function getOriginalUrl(req) {
 	const originalHost = req.headers["x-forwarded-host"] || req.get("host")
 	const originalProto = req.headers["x-forwarded-proto"] || req.protocol
 	const originalUri = req.headers["x-forwarded-uri"] || req.originalUrl
 
 	const originalUrl = `${originalProto}://${originalHost}${originalUri}`
 
-	const sessionID = uuidv4()
-
-	await WriteToCache(`service=${sessionID}`, originalUrl)
-
-	return res.redirect(`/?session_id=${sessionID}`)
+	return originalUrl
 }
 
 function registerOauth() {
@@ -127,7 +123,13 @@ function registerOauth() {
 		}
 
 		if (req.hostname !== redirectURL.hostname) {
-			return handleServiceUrl(req, res)
+			const originalUrl = getOriginalUrl(req, res)
+
+			const sessionID = uuidv4()
+
+			await WriteToCache(`service=${sessionID}`, originalUrl)
+
+			return res.redirect(`${redirectURL.origin}/?session_id=${sessionID}`)
 		}
 
 		if (!req.isAuthenticated()) {
@@ -178,31 +180,31 @@ function registerFakeAuth() {
 	})
 
 	router.get("/", async (req, res, next) => {
-		if (req.query.session_id) {
-			res.cookie("session_id", req.query.session_id, {
-				httpOnly: true,
-				secure: true,
-				sameSite: "lax",
-				maxAge: 1000 * 60 * 60,
-			})
-		} else {
-			return await handleServiceUrl(req, res)
+		if (!req.isAuthenticated) {
+			req.session.user = {
+				username: "user",
+				email: "",
+				locale: "",
+			}
 		}
 
-		if (!req.isAuthenticated()) {
-			return res.redirect("/auth")
-		}
+		const originalUrl = getOriginalUrl(req, res)
+
+		const sessionID = uuidv4()
+
+		res.cookie("session_id", req.query.session_id, {
+			httpOnly: true,
+			secure: true,
+			sameSite: "lax",
+			maxAge: 1000 * 60 * 60,
+		})
+
+		await WriteToCache(`service=${sessionID}`, originalUrl)
 
 		next()
 	})
 
 	router.get("/auth", (req, res) => {
-		req.session.user = {
-			username: "user",
-			email: "",
-			locale: "",
-		}
-
 		return res.redirect("/")
 	})
 
