@@ -12,7 +12,7 @@ import { logger } from "./utils/logger.js"
 
 import {
 	redisClient,
-	GetFromCache,
+	ReadFromCache,
 	WriteToCache,
 	DeleteFromCache,
 } from "./db.js"
@@ -112,8 +112,18 @@ function registerOauth() {
 	router.use(passport.session())
 
 	router.get("/", async (req, res, next) => {
-		if (req.query.session_id) {
-			res.cookie("session_id", req.query.session_id, {
+		// auth.com => app.com
+		if (req.query.state) {
+			const state = req.query.state
+
+			const sessionID = await ReadFromCache(`oauth_state=${state}`)
+			if (!sessionID) {
+				return res.status(400).send("Invalid or expired oauth state")
+			}
+
+			await DeleteFromCache(`oauth_state=${state}`)
+
+			res.cookie("session_id", sessionID, {
 				domain: redirectURL.hostname,
 				httpOnly: true,
 				secure: true,
@@ -122,18 +132,22 @@ function registerOauth() {
 			})
 		}
 
+		// entry.com => app.com
 		if (req.hostname !== redirectURL.hostname) {
 			const originalUrl = getOriginalUrl(req)
-
-			logger.debug("Cached original url: " + originalUrl)
+			logger.debug("Cached entrypoint: " + originalUrl)
 
 			const sessionID = uuidv4()
+			const state = uuidv4()
 
 			await WriteToCache(`service=${sessionID}`, originalUrl)
 
-			return res.redirect(`${redirectURL.origin}/?session_id=${sessionID}`)
+			await WriteToCache(`oauth_state=${state}`, sessionID, { expire: 600 })
+
+			return res.redirect(`${redirectURL.origin}/?state=${state}`)
 		}
 
+		// app.com => auth.com
 		if (!req.isAuthenticated()) {
 			return res.redirect("/auth")
 		}

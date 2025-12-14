@@ -7,7 +7,7 @@ import { ENV } from "./env.js"
 import request from "./utils/request.js"
 
 import * as wss from "./wss.js"
-import { GetFromCache, DeleteFromCache } from "./db.js"
+import { ReadFromCache, DeleteFromCache } from "./db.js"
 
 const router = express.Router()
 
@@ -335,7 +335,7 @@ async function startProcessing(req, res) {
 	}
 
 	const key = `service=${sessionID}`
-	const originalUrl = await GetFromCache(key)
+	const originalUrl = await ReadFromCache(key)
 
 	await DeleteFromCache(key)
 
@@ -441,11 +441,11 @@ export function Router() {
 }
 
 router.get("/", async (req, res, next) => {
-	if (!req.session) {
-		return res.status(500).send("Bad Request: Missing session_id")
+	if (!req.cookies.session_id) {
+		return res.redirect("/auth")
 	}
 
-	const serviceUrl = await GetFromCache(`service=${req.query.session_id}`)
+	const serviceUrl = await ReadFromCache(`service=${req.cookies.session_id}`)
 
 	return res.render("home", {
 		user: {

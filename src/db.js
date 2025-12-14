@@ -19,7 +19,7 @@ export async function Init() {
 	logger.debug("Connected to Redis")
 }
 
-export async function GetFromCache(key, { hash = false } = {}) {
+export async function ReadFromCache(key, { hash = false } = {}) {
 	if (hash) {
 		return await redisClient.hGetAll(key)
 	} else {
@@ -27,14 +27,18 @@ export async function GetFromCache(key, { hash = false } = {}) {
 	}
 }
 
-export async function WriteToCache(key, value, { hash = false } = {}) {
+export async function WriteToCache(
+	key,
+	value,
+	{ hash = false, expire = 3600 } = {}
+) {
 	if (hash) {
 		await redisClient.hSet(key, value)
 	} else {
 		await redisClient.set(key, value)
 	}
 
-	await redisClient.expire(key, 3600)
+	await redisClient.expire(key, expire)
 }
 
 export async function DeleteFromCache(key, { hash = false } = {}) {
