@@ -70,7 +70,7 @@ body {
 
 .spinner {
 	height: clamp(80px, 14vmin, 120px);
-	aspect-ratio: 1 / 1;
+	width: clamp(80px, 14vmin, 120px);
 	border: 8px solid;
 	border-color: var(--spinner-color) var(--spinner-color) var(--spinner-color)
 		var(--spinner-color-transparent);
@@ -79,8 +79,8 @@ body {
 
 .line {
 	position: absolute;
-	height: 80px;
-	width: 120px;
+	height: clamp(80px, 14vmin, 120px);
+	width: clamp(80px, 14vmin, 120px);
 	border: 8px solid;
 	border-color: var(--line-color) var(--line-color) var(--line-color)
 		var(--line-color);
@@ -88,7 +88,7 @@ body {
 }
 
 #hide {
-	opacity: 0;
+	display: none;
 }
 
 #spin {
@@ -123,13 +123,13 @@ body {
 
 @keyframes add-line {
 	20% {
-		opacity: 1;
+		display: none;
 	}
 	40% {
 		border-color: var(--line-color) transparent var(--line-color) transparent;
 	}
 	100% {
-		opacity: 1;
+		display: block;
 		height: 0px;
 		border-radius: 6px;
 		border-color: var(--line-color) transparent var(--line-color) transparent;
