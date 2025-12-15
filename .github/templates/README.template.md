@@ -2,7 +2,7 @@
 
 WoL Redirect is a Docker Container with graphical interface, which allows users to wake up their services.
 Integrates with all of the WoL Containers.
-
+s
 _Well, except for meteorite_
 
 ## Installation

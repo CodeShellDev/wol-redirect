@@ -1,0 +1,70 @@
+html[data-theme="dark"] {
+	--bg-color: #211f1f;
+	--dot-color: #ffffff;
+
+	--icon-color: #ffffff;
+
+	--card-color: #1a1919;
+
+	--text-color: #ffffff;
+	--secondary-color: #bbbbbb;
+
+	--spinner-color: #4b8264;
+	--spinner-color-transparent: transparent;
+	--line-color: #8f3d3d;
+}
+
+html[data-theme="light"] {
+	--bg-color: #ffffff;
+	--dot-color: #2a2a2a;
+
+	--icon-color: #1a1a1a;
+
+	--card-color: #ffffff;
+
+	--text-color: #1a1919;
+	--secondary-color: #555555;
+
+	--spinner-color: #5aa47b;
+	--spinner-color-transparent: transparent;
+	--line-color: #d9534f;
+}
+
+.theme-toggle {
+	position: absolute;
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	top: 15px;
+	left: 15px;
+
+	aspect-ratio: 1 / 1;
+
+	height: clamp(50px / 1.5, 6vmin / 1.5, 60px / 1.5);
+
+	background: var(--card-color);
+	border-radius: 16px;
+
+	box-shadow: 0 0 25px rgba(0, 0, 0, 0.35);
+	border: 1px solid rgba(255, 255, 255, 0.05);
+
+	backdrop-filter: blur(18px);
+	-webkit-backdrop-filter: blur(18px);
+}
+
+.theme-toggle #sun,
+.theme-toggle #moon {
+	color: var(--icon-color);
+	fill: var(--icon-color);
+	display: none;
+}
+
+html[data-theme="light"] .theme-toggle #moon {
+	display: block;
+}
+
+html[data-theme="dark"] .theme-toggle #sun {
+	display: block;
+}

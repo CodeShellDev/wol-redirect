@@ -1,39 +1,60 @@
-const express = require("express")
-const log = require("./utils/logger")
-const env = require("./env")
+import express from "express"
+import { createServer } from "http"
+import cookieParser from "cookie-parser"
+
+import { Init } from "./db.js"
+import * as log from "./utils/logger.js"
+import * as env from "./env.js"
+
+import { Router as auth } from "./auth.js"
+import { Router as wol } from "./wol.js"
+import { Attach } from "./wss.js"
 
 const app = express()
 
-log.Init()
-
-env.Load()
-
-log.Log()
-
-if (log.logger.level != env.ENV.logLevel) {
-	log.Init(env.ENV.logLevel)
-}
+app.use(express.static("public"))
 
 app.set("view engine", "ejs")
 app.set("trust proxy", true)
 
 app.use((req, res, next) => {
-	log.logger.info(`${req.method} ${req.path} ${req.query}`)
+	res.setHeader("X-Redirect-Service", "1")
+
+	if (req.headers["x-redirect-service"]) {
+		return res.status(200).end()
+	}
+
+	const url = new URL(req.url, `${req.protocol}://${req.hostname}`)
+
+	log.logger.info(`${req.method} ${url.pathname} ${url.search}`)
+	next()
 })
 
-const auth = require("./auth")
-const wol = require("./wol")
+log.Init()
+env.Load()
 
-app.use("/", auth)
+if (log.logger.level != env.ENV.logLevel) {
+	log.Init(env.ENV.logLevel)
+}
 
-app.get("/data", wol)
+log.Log()
+
+await Init()
+
+app.use(cookieParser())
+
+app.use("/", auth())
+app.use("/", wol())
 
 app.use((err, req, res, next) => {
-	logger.error(err.message)
-
-	res.status(500).send("Internal server error")
+	log.logger.error(err)
+	res.status(500).send("Encountered an unexpected error")
 })
 
-app.listen(env.ENV.port, () => {
+const server = createServer(app)
+
+Attach(server)
+
+server.listen(env.ENV.port, () => {
 	log.logger.info(`Server running on Port ${env.ENV.port}`)
 })

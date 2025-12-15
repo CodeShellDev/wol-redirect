@@ -1,0 +1,35 @@
+.user {
+	position: absolute;
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	top: 15px;
+	right: 15px;
+
+	background: var(--card-color);
+	border-radius: 360px;
+	aspect-ratio: 1 / 1;
+
+	box-shadow: 0 0 25px rgba(0, 0, 0, 0.35);
+	border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.profile {
+	display: flex;
+
+	justify-content: center;
+	align-items: center;
+
+	margin: 3px 3px 3px 3px;
+	padding: 1px 1px 1px 1px;
+
+	border-radius: 360px;
+	aspect-ratio: 1 / 1;
+
+	height: clamp(50px, 6vmin, 60px);
+	font-size: clamp(25px, 6vmin / 2, 30px);
+
+	font-weight: bold;
+}
