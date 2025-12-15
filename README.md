@@ -243,32 +243,34 @@ SCOPE=openid profile
 
 The `hosts` section defines all machines, VMs, containers, or Docker services that WoL Redirect can wake up. Each host entry may have several optional or required fields depending on its type.
 
-| Field          | Type    | Required                 | Description                                                                     |
-| -------------- | ------- | ------------------------ | ------------------------------------------------------------------------------- |
-| `ip`           | string  | Yes                      | The IP address of the host. Required for all types.                             |
-| `mac`          | string  | Required for PHYSICAL    | MAC address for Wake-on-LAN. Only needed for physical hosts.                    |
-| `id`           | string  | Required for VIRTUAL     | Identifier for virtual machines or LXCs.                                        |
-| `virtIP`       | string  | Optional                 | IP of the VM/LXC for the wake API. Defaults to `ip`.                            |
-| `startupTime`  | number  | Optional                 | Seconds to wait after starting before forwarding traffic.                       |
-| `url`          | string  | Optional                 | Override the default helper URL for this host.                                  |
-| `docker`       | object  | Required for DOCKER type | Docker-specific settings. See below.                                            |
-| `docker: true` | boolean | Optional                 | Can be set to `true` to mark a host as DOCKER type without additional settings. |
+| Field          | Type    | Required                 | Description                                                                                             |
+| -------------- | ------- | ------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `ip`           | string  | Yes                      | The IP address of the host. Used for all types; typically used for ping checks and default connections. |
+| `mac`          | string  | Required for PHYSICAL    | MAC address for Wake-on-LAN. Only needed for physical hosts.                                            |
+| `addr`         | string  | Optional, PHYSICAL only  | The network address used to send WoL packets, if different from `ip` or subnet.                         |
+| `id`           | string  | Required for VIRTUAL     | Identifier for virtual machines or LXCs.                                                                |
+| `virtIP`       | string  | Optional                 | IP of the VM/LXC for the wake API. Defaults to `ip`.                                                    |
+| `startupTime`  | number  | Optional                 | Seconds to wait after starting before forwarding traffic.                                               |
+| `url`          | string  | Optional                 | Override the default helper URL for this host.                                                          |
+| `docker`       | object  | Required for DOCKER type | Docker-specific settings. See below.                                                                    |
+| `docker: true` | boolean | Optional                 | Can be set to `true` to mark a host as DOCKER type without additional settings.                         |
 
-## Docker Sub-Object
+### Docker Sub-Object
 
 | Field          | Type   | Required | Description                                                                                |
 | -------------- | ------ | -------- | ------------------------------------------------------------------------------------------ |
 | `queryPattern` | string | Optional | Template used to build the query for WoL Dockerized. Falls back to `ENV.woldQueryPattern`. |
 | `url`          | string | Optional | Override URL for Docker wake API. Defaults to `http://${host.ip}:${ENV.woldPort}/wake`.    |
 
-## Host Type Inference
+### Host Type Inference
 
 - **PHYSICAL** → has `mac` and `ip`
 - **VIRTUAL** → has `id`
 - **DOCKER** → has `docker` object or `docker: true`
 
-## Notes on Optional Overrides
+### Notes on Optional Overrides
 
+- `addr` allows sending WoL packets to a different network address than `ip`, useful for hosts behind different subnets or NAT.
 - `url` can override default helper URLs for PHYSICAL, VIRTUAL, or DOCKER hosts.
 - `virtIP` can override the IP used by virtual helper services.
 - `docker.queryPattern` can override the global `ENV.woldQueryPattern`.
