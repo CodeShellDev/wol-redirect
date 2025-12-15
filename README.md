@@ -49,7 +49,6 @@ In this example we'll be using traefik:
 
 ```yaml
 services:
-  # ...
   wolred:
     container_name: wol-redirect
     image: ghcr.io/codeshelldev/wol-redirect:latest
@@ -59,12 +58,13 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.wolred-https.rule=Host(`wol-redirect.mydomain.com`)
+      - traefik.http.routers.wolred-https.priority=10
       - traefik.http.routers.wolred-https.entrypoints=websecure
       - traefik.http.routers.wolred-https.tls=true
       - traefik.http.routers.wolred-https.tls.certresolver=cloudflare
       - traefik.http.routers.wolred-https.service=wolred-svc
 
-      - traefik.http.services.wolred-svc.loadbalancer.server.port=80
+      - traefik.http.services.wolred-svc.loadbalancer.server.port=6789
       - traefik.docker.network=proxy
     volumes:
       - ./config:/app/config:ro
@@ -81,37 +81,7 @@ networks:
 Let's use jellyfin for example
 
 ```yaml
-http:
-  routers:
-    jellyfin:
-      entrypoints:
-        - "websecure"
-      rule: "Host(`jellyfin.mydomain.com`)"
-      tls:
-        certResolver: cloudflare
-      service: jellyfin-failover
-
-  services:
-    jellyfin-failover:
-      failover:
-        service: jellyfin-svc@file
-        fallback: wolred-svc@docker # the name of your wol redirect service
-    jellyfin-svc:
-      loadBalancer:
-        serversTransport: transport
-        healthCheck:
-          # host your jellyfin instance with an additional port 12345, which is used for healthchecks
-          # change this to port 80 / 443 if you are not hosting the docker host on top of PVE with wol-pve
-          port: 12345
-          interval: 5s
-          timeout: 3s
-          scheme: http
-        servers:
-          - url: "https://jellyfin.server2.mydomain.com" # actual url of jellyfin
-
-  serversTransports:
-    transport:
-      insecureSkipVerify: true
+file not found: /home/runner/work/wol-redirect/wol-redirect/examples/jellyfin.yaml
 ```
 
 ### Configuration
@@ -122,7 +92,7 @@ http:
 		"server-1": {
 			"ip": "192.168.1.1",
 			"mac": "XX:XX:XX:XX:XX:XX",
-			"startupTime": 40
+			"startupTime": 60
 		}
 	},
 	"routes": {
@@ -160,35 +130,7 @@ Sadly LXCs (and VMs) don't have `Wake-on-LAN` functionalities.
 For that you will need [WoL PVE](https://github.com/codeshelldev/wol-pve)
 
 ```json
-{
-	"hosts": {
-		"pve": {
-			"ip": "192.168.1.1",
-			"mac": "XX:XX:XX:XX:XX:XX",
-			"startupTime": 40
-		},
-		"lxc": {
-			"ip": "192.168.1.1",
-			"id": "100",
-			"startupTime": 10,
-			"isVirtual": true
-		},
-		"ubuntu-vm": {
-			"ip": "192.168.1.1",
-			"id": "100",
-			"startupTime": 10,
-			"isVirtual": true
-		}
-	},
-	"routes": {
-		"pve-lxc": {
-			"route": ["pve", "lxc"]
-		}
-	},
-	"records": {
-		"*.mydomain.com": "pve-lxc"
-	}
-}
+file not found: /home/runner/work/wol-redirect/wol-redirect/examples/config/mapping-pve.json
 ```
 
 #### Docker
@@ -197,65 +139,13 @@ If you are running docker on your resource-hungry server, you might want to star
 For this to work you will need [WoL Dockerized](https://github.com/codeshelldev/wol-dockerized)
 
 ```json
-{
-	"hosts": {
-		"docker-server": {
-			"ip": "192.168.1.1",
-			"mac": "XX:XX:XX:XX:XX:XX",
-			"startupTime": 10
-		}
-	},
-	"routes": {
-		"docker": {
-			"route": ["docker-server"],
-			"attributes": {
-				"wakeDocker": true
-			}
-		}
-	},
-	"records": {
-		"jellyfin.mydomain.com": "docker",
-		"*.mydomain.com": "docker"
-	}
-}
+file not found: /home/runner/work/wol-redirect/wol-redirect/examples/config/mapping-docker.json
 ```
 
 #### Or both
 
 ```json
-{
-	"hosts": {
-		"pve": {
-			"ip": "192.168.1.1",
-			"mac": "XX:XX:XX:XX:XX:XX",
-			"startupTime": 40
-		},
-		"lxc": {
-			"ip": "192.168.1.1",
-			"id": "100",
-			"startupTime": 10,
-			"isVirtual": true
-		},
-		"ubuntu-vm": {
-			"ip": "192.168.1.1",
-			"id": "100",
-			"startupTime": 10,
-			"isVirtual": true
-		}
-	},
-	"routes": {
-		"pve-lxc": {
-			"route": ["pve", "lxc"],
-			"attributes": {
-				"wakeDocker": true
-			}
-		}
-	},
-	"records": {
-		"jellyfin.mydomain.com": "pve-lxc",
-		"*.mydomain.com": "pve-lxc"
-	}
-}
+file not found: /home/runner/work/wol-redirect/wol-redirect/examples/config/mapping-pve-docker.json
 ```
 
 _You will need both [WoL PVE](https://github.com/codeshelldev/wol-pve) and [WoL Dockerized](https://github.com/codeshelldev/wol-dockerized)_
