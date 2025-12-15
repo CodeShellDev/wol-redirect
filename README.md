@@ -127,19 +127,19 @@ Basic service-to-host mappings:
 ```json
 {
 	"hosts": {
-		"server-1": {
+		"server": {
 			"ip": "192.168.1.1",
 			"mac": "XX:XX:XX:XX:XX:XX",
 			"startupTime": 60
 		}
 	},
 	"routes": {
-		"server-1": {
-			"route": ["server-1"]
+		"server-only": {
+			"route": ["server"]
 		}
 	},
 	"records": {
-		"*.mydomain.com": "server-1"
+		"*.mydomain.com": "server-only"
 	}
 }
 ```
@@ -147,19 +147,133 @@ Basic service-to-host mappings:
 Environment variables:
 
 ```dotenv
-CLIENT_ID=CLIENT_ID
-CLIENT_SECRET=CLIENT_SECRET
+############################
+# Core Application Settings
+############################
 
-# Authentik setup
-AUTH_URL=https://authentication.mydomain.com/application/o/authorize/
-TOKEN_URL=https://authentication.mydomain.com/application/o/token/
-REDIRECT_URL=https://wol-redirect.mydomain.com/auth/callback/
-RESOURCE_URL=https://authentication.mydomain.com/application/o/userinfo/
-LOGOUT_URL=https://authentication.mydomain.com/application/o/wol-red/end-session/
+# Path to the service mapping configuration file
+CONFIG_PATH=/app/config/mapping.json
 
-SESSION_KEY=MY_SESSION_KEY # generate this with openssl
-SCOPE=openid
+# Port WoL Redirect listens on
+PORT=6789
+
+# Log level: trace | debug | info | warn | error | fatal
+LOG_LEVEL=info
+
+# Expose logs via the UI or HTTP endpoint
+EXPOSE_LOGS=true
+
+
+############################
+# Session & Security
+############################
+
+# Secret key used to sign sessions (REQUIRED)
+# Generate a long random string
+SESSION_KEY=change-me-to-a-random-secret
+
+
+############################
+# Redis Configuration
+############################
+
+# Redis hostname or service name
+REDIS_HOST=redis
+
+# Redis port
+REDIS_PORT=6379
+
+# Redis username (usually "default")
+REDIS_USER=default
+
+# Redis password (use long secure password)
+REDIS_PASSWORD=
+
+
+############################
+# Wake-on-LAN / Helper Services
+############################
+
+# Default query pattern used to match WoL services
+WOLD_QUERY_PATTERN=
+
+# Base URL of default your WoL Client helper
+# Example: http://wol-client:5555/wake
+WOL_URL=
+
+# Default port used by WoL Dockerized helper
+WOLD_PORT=7777
+
+# Default port used by virtualization helper (VMs / LXCs / hypervisors)
+VIRTUAL_PORT=9999
+
+
+############################
+# OAuth Configuration
+############################
+
+# Enable or disable OAuth authentication
+USE_OAUTH=true
+
+# OAuth authorization endpoint
+AUTHORIZATION_URL=
+
+# OAuth resource / userinfo endpoint
+RESOURCE_URL=
+
+# OAuth logout endpoint
+LOGOUT_URL=
+
+# OAuth token endpoint
+TOKEN_URL=
+
+# Redirect URL registered with your OAuth provider
+# Example: https://wol-red.mydomain.com/auth/callback
+REDIRECT_URL=
+
+# OAuth client credentials
+CLIENT_ID=
+CLIENT_SECRET=
+
+# OAuth scopes
+SCOPE=openid profile
 ```
+
+## Hosts Configuration
+
+The `hosts` section defines all machines, VMs, containers, or Docker services that WoL Redirect can wake up. Each host entry may have several optional or required fields depending on its type.
+
+| Field          | Type    | Required                 | Description                                                                     |
+| -------------- | ------- | ------------------------ | ------------------------------------------------------------------------------- |
+| `ip`           | string  | Yes                      | The IP address of the host. Required for all types.                             |
+| `mac`          | string  | Required for PHYSICAL    | MAC address for Wake-on-LAN. Only needed for physical hosts.                    |
+| `id`           | string  | Required for VIRTUAL     | Identifier for virtual machines or LXCs.                                        |
+| `virtIP`       | string  | Optional                 | IP of the VM/LXC for the wake API. Defaults to `ip`.                            |
+| `startupTime`  | number  | Optional                 | Seconds to wait after starting before forwarding traffic.                       |
+| `url`          | string  | Optional                 | Override the default helper URL for this host.                                  |
+| `docker`       | object  | Required for DOCKER type | Docker-specific settings. See below.                                            |
+| `docker: true` | boolean | Optional                 | Can be set to `true` to mark a host as DOCKER type without additional settings. |
+
+## Docker Sub-Object
+
+| Field          | Type   | Required | Description                                                                                |
+| -------------- | ------ | -------- | ------------------------------------------------------------------------------------------ |
+| `queryPattern` | string | Optional | Template used to build the query for WoL Dockerized. Falls back to `ENV.woldQueryPattern`. |
+| `url`          | string | Optional | Override URL for Docker wake API. Defaults to `http://${host.ip}:${ENV.woldPort}/wake`.    |
+
+## Host Type Inference
+
+- **PHYSICAL** → has `mac` and `ip`
+- **VIRTUAL** → has `id`
+- **DOCKER** → has `docker` object or `docker: true`
+
+## Notes on Optional Overrides
+
+- `url` can override default helper URLs for PHYSICAL, VIRTUAL, or DOCKER hosts.
+- `virtIP` can override the IP used by virtual helper services.
+- `docker.queryPattern` can override the global `ENV.woldQueryPattern`.
+- `startupTime` allows per-host delay before forwarding traffic.
+- The execution order of hosts in a route determines the startup sequence.
 
 ## Advanced Setups
 
@@ -183,24 +297,20 @@ Example mapping configuration:
 			"mac": "XX:XX:XX:XX:XX:XX",
 			"startupTime": 40
 		},
-		"lxc": {
-			"ip": "192.168.1.1",
-			"id": "100",
-			"startupTime": 10
-		},
 		"vm": {
 			"ip": "192.168.1.1",
 			"id": "200",
-			"startupTime": 10
+			"virtIP": "192.168.1.20",
+			"startupTime": 15
 		}
 	},
 	"routes": {
-		"hypervisor-lxc": {
-			"route": ["hypervisor", "lxc"]
+		"hypervisor-vm": {
+			"route": ["hypervisor", "vm"]
 		}
 	},
 	"records": {
-		"*.mydomain.com": "hypervisor-lxc"
+		"*.mydomain.com": "hypervisor-vm"
 	}
 }
 ```
@@ -226,18 +336,20 @@ Example mapping configuration:
 {
 	"hosts": {
 		"docker-server": {
-			"ip": "192.168.5.10",
-			"docker": true
+			"ip": "192.168.1.10",
+			"docker": {
+				"queryPattern": "{{HOSTNAME}}"
+			}
 		}
 	},
 	"routes": {
-		"docker": {
+		"docker-only": {
 			"route": ["docker-server"]
 		}
 	},
 	"records": {
-		"jellyfin.mydomain.com": "docker",
-		"*.mydomain.com": "docker"
+		"jellyfin.mydomain.com": "docker-only",
+		"*.mydomain.com": "docker-only"
 	}
 }
 ```
@@ -249,7 +361,35 @@ If your environment uses both virtualization and Docker (for example Docker runn
 Example mapping configuration:
 
 ```json
-file not found: /home/runner/work/wol-redirect/wol-redirect/examples/config/virtual-docker.mapping.json
+{
+	"hosts": {
+		"hypervisor": {
+			"ip": "192.168.1.1",
+			"mac": "XX:XX:XX:XX:XX:XX",
+			"startupTime": 40
+		},
+		"lxc": {
+			"ip": "192.168.1.1",
+			"id": "100",
+			"virtIP": "10.0.0.10",
+			"startupTime": 10
+		},
+		"docker-server": {
+			"ip": "10.0.0.10",
+			"docker": {
+				"queryPattern": "{{HOSTNAME}}"
+			}
+		}
+	},
+	"routes": {
+		"hypervisor-lxc-docker": {
+			"route": ["hypervisor", "lxc", "docker-server"]
+		}
+	},
+	"records": {
+		"*.mydomain.com": "hypervisor-lxc-docker"
+	}
+}
 ```
 
 This setup requires:
