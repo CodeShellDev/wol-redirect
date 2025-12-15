@@ -1,19 +1,17 @@
 {
-"hosts": {
-"server": {
-"ip": "192.168.1.1", // REQUIRED: Host IP
-"mac": "XX:XX:XX:XX:XX:XX", // REQUIRED for PHYSICAL type
-"startupTime": 60, // Optional: seconds to wait after wake
-"url": "http://custom-wol:7777
-" // Optional: override default ENV.wolURL
-}
-},
-"routes": {
-"server-only": {
-"route": ["server"]
-}
-},
-"records": {
-"*.mydomain.com": "server-only"
-}
+	"hosts": {
+		"server": {
+			"ip": "192.168.1.1",
+			"mac": "XX:XX:XX:XX:XX:XX",
+			"startupTime": 60
+		}
+	},
+	"routes": {
+		"server-only": {
+			"route": ["server"]
+		}
+	},
+	"records": {
+		"*.mydomain.com": "server-only"
+	}
 }
