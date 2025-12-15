@@ -1,0 +1,182 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	color: var(--text-color);
+	font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+	background: var(--bg-color);
+
+	display: flex;
+	height: 100vh;
+	align-items: center;
+	justify-content: center;
+	flex-direction: row;
+
+	transition: background 0.3s, color 0.3s;
+
+	z-index: 1;
+}
+
+.container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+
+	width: 90%;
+	max-width: 600px;
+
+	padding: 40px 30px;
+
+	gap: 25px;
+
+	background: var(--card-color);
+	border-radius: 16px;
+
+	box-shadow: 0 0 25px rgba(0, 0, 0, 0.35);
+	border: 1px solid rgba(255, 255, 255, 0.05);
+
+	backdrop-filter: blur(18px);
+	-webkit-backdrop-filter: blur(18px);
+}
+
+.top-row {
+	display: flex;
+	align-items: center;
+	min-height: 10vh;
+}
+
+.middle-row {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 10px;
+}
+
+.bottom-row {
+	padding-top: 30px;
+	display: flex;
+	align-items: center;
+	gap: 30px;
+	font-size: 14px;
+	white-space: pre-wrap;
+	color: var(--secondary-color);
+	opacity: 0.8;
+}
+
+.spinner {
+	height: clamp(80px, 14vmin, 120px);
+	width: clamp(80px, 14vmin, 120px);
+	border: 8px solid;
+	border-color: var(--spinner-color) var(--spinner-color) var(--spinner-color)
+		var(--spinner-color-transparent);
+	border-radius: 50%;
+}
+
+.line {
+	position: absolute;
+	height: clamp(80px, 14vmin, 120px);
+	width: clamp(80px, 14vmin, 120px);
+	border: 8px solid;
+	border-color: var(--line-color) var(--line-color) var(--line-color)
+		var(--line-color);
+	border-radius: 50%;
+}
+
+#hide {
+	display: none;
+}
+
+#spin {
+	animation: spin 0.8s ease infinite;
+}
+
+#cross-line {
+	animation: collapse-to-cross 1s ease forwards;
+}
+
+#add-line {
+	animation: add-line 1s ease forwards;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes collapse-to-cross {
+	40% {
+		border-color: var(--line-color) transparent var(--line-color) transparent;
+	}
+	100% {
+		height: 0px;
+		border-radius: 6px;
+		border-color: var(--line-color) transparent var(--line-color) transparent;
+		transform: rotate(45deg);
+	}
+}
+
+@keyframes add-line {
+	20% {
+		display: none;
+	}
+	40% {
+		border-color: var(--line-color) transparent var(--line-color) transparent;
+	}
+	100% {
+		display: block;
+		height: 0px;
+		border-radius: 6px;
+		border-color: var(--line-color) transparent var(--line-color) transparent;
+		transform: rotate(-45deg);
+	}
+}
+
+.bg-pattern {
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+
+	background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
+	background-size: 20px 20px;
+
+	opacity: 0.25;
+	animation: move-dots 18s linear infinite;
+
+	z-index: 0;
+}
+
+.bg-pattern::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+
+	background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
+	background-size: 28px 28px;
+	opacity: 0.15;
+
+	animation: move-dots-reverse 28s linear infinite;
+}
+
+@keyframes move-dots {
+	from {
+		background-position: 0 0;
+	}
+	to {
+		background-position: 200px 200px;
+	}
+}
+
+@keyframes move-dots-reverse {
+	from {
+		background-position: 0 0;
+	}
+	to {
+		background-position: -200px -200px;
+	}
+}

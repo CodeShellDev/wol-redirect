@@ -1,20 +1,27 @@
-const logger = require("./utils/logger").logger
+import { logger } from "./utils/logger.js"
 
-const fsutils = require("./utils/fs")
+import { exists } from "./utils/fs.js"
 
-const ENV = {
-	configPath: "config/mapping.json",
+export const ENV = {
+	configPath: "/app/config/mapping.json",
 	port: "6789",
 	logLevel: "info",
-	exposeLogs: false,
 
-	queryPattern: "",
-	wolURL: null,
-	woldURL: null,
-	virtualPort: "",
+	exposeLogs: true,
+	useOauth: true,
+
+	redisHost: "redis",
+	redisPort: "6379",
+	redisUser: "default",
+	redisPassword: "",
+
+	woldQueryPattern: "",
+	wolURL: "",
+
+	woldPort: "7777",
+	vePort: "9999",
 
 	sessionKey: "",
-	cookieKey: "",
 
 	authorizationURL: "",
 	resourceURL: "",
@@ -27,10 +34,10 @@ const ENV = {
 	scope: "openid profile",
 }
 
-function Load() {
+export function Load() {
 	let configPath = process.env.CONFIG_PATH || ENV.configPath
 
-	if (fsutils.exists(configPath)) {
+	if (exists(configPath)) {
 		ENV.configPath = configPath
 	} else {
 		logger.fatal(`${configPath} not found`)
@@ -39,72 +46,74 @@ function Load() {
 	ENV.port = process.env.PORT || ENV.port
 	ENV.logLevel = process.env.LOG_LEVEL || ENV.logLevel
 
-	ENV.queryPattern = process.env.QUERY_PATTERN
+	ENV.redisHost = process.env.REDIS_HOST || ENV.redisHost
+	ENV.redisPort = process.env.REDIS_PORT || ENV.redisPort
+	ENV.redisUser = process.env.REDIS_USER || ENV.redisUser
+	ENV.redisPassword = process.env.REDIS_PASSWORD || ENV.redisPassword
 
-	ENV.exposeLogs = process.env.EXPOSE_LOGS || ENV.exposeLogs
+	ENV.woldQueryPattern = process.env.WOLD_QUERY_PATTERN || ""
 
-	if (ENV.queryPattern == "") {
-		logger.fatal(`Query pattern is empty`)
+	const exposeLogs = process.env.EXPOSE_LOGS
+
+	if (exposeLogs) {
+		ENV.exposeLogs = exposeLogs.trim().toLowerCase() == "true"
 	}
 
 	ENV.wolURL = process.env.WOL_URL || ""
-	ENV.woldURL = process.env.WOLD_URL || ""
-	ENV.virtualPort = process.env.VIRTUAL_PORT || ""
+
+	ENV.woldPort = process.env.WOLD_PORT || ENV.woldPort
+	ENV.vePort = process.env.VIRTUAL_PORT || ENV.vePort
 
 	if (!ENV.wolURL) {
 		logger.warn("No WoL URL set")
 	}
-	if (!ENV.woldURL) {
-		logger.warn("No WoL docker URL set")
-	}
-	if (!ENV.virtualPort) {
-		logger.warn("No virtual port set")
-	}
 
 	ENV.sessionKey = process.env.SESSION_KEY || ""
-	ENV.cookieKey = process.env.COOKIE_KEY || ""
 
 	if (!ENV.sessionKey) {
 		logger.fatal("No session key provided")
 	}
-	if (!ENV.cookieKey) {
-		logger.fatal("No cookie key provided")
+
+	const useOauth = process.env.USE_OAUTH
+
+	if (useOauth) {
+		ENV.useOauth = useOauth.trim().toLowerCase() == "true"
 	}
 
-	ENV.authorizationURL = process.env.AUTHORIZATION_URL || ""
-	ENV.resourceURL = process.env.RESOURCE_URL || ""
-	ENV.logoutURL = process.env.LOGOUT_URL || ""
-	ENV.tokenURL = process.env.TOKEN_URL || ""
-	ENV.redirectURL = process.env.REDIRECT_URL || ""
+	if (ENV.useOauth) {
+		ENV.authorizationURL = process.env.AUTHORIZATION_URL || ""
+		ENV.resourceURL = process.env.RESOURCE_URL || ""
+		ENV.logoutURL = process.env.LOGOUT_URL || ""
+		ENV.tokenURL = process.env.TOKEN_URL || ""
+		ENV.redirectURL = process.env.REDIRECT_URL || ""
 
-	if (!ENV.authorizationURL) {
-		logger.fatal("No authorization URL set")
-	}
-	if (!ENV.resourceURL) {
-		logger.fatal("No resource URL set")
-	}
-	if (!ENV.logoutURL) {
-		logger.fatal("No logout URL set")
-	}
-	if (!ENV.tokenURL) {
-		logger.fatal("No token URL set")
-	}
-	if (!ENV.redirectURL) {
-		logger.fatal("No redirect URL set")
-	}
+		if (!ENV.authorizationURL) {
+			logger.fatal("No authorization URL set")
+		}
+		if (!ENV.resourceURL) {
+			logger.fatal("No resource URL set")
+		}
+		if (!ENV.logoutURL) {
+			logger.fatal("No logout URL set")
+		}
+		if (!ENV.tokenURL) {
+			logger.fatal("No token URL set")
+		}
+		if (!ENV.redirectURL) {
+			logger.fatal("No redirect URL set")
+		}
 
-	ENV.clientID = process.env.CLIENT_ID || ""
-	ENV.clientSecret = process.env.CLIENT_SECRET || ""
-	ENV.scope = process.env.SCOPE || ENV.scope
+		ENV.clientID = process.env.CLIENT_ID || ""
+		ENV.clientSecret = process.env.CLIENT_SECRET || ""
+		ENV.scope = process.env.SCOPE || ENV.scope
 
-	if (!ENV.clientID) {
-		logger.fatal("No client id provided")
-	}
-	if (!ENV.clientSecret) {
-		logger.fatal("No client secret provided")
+		if (!ENV.clientID) {
+			logger.fatal("No client id provided")
+		}
+		if (!ENV.clientSecret) {
+			logger.fatal("No client secret provided")
+		}
 	}
 
 	logger.info("Loaded Environment")
 }
-
-module.exports = { ENV, Load }

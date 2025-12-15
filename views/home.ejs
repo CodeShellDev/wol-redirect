@@ -3,230 +3,17 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+		<link rel="stylesheet" href="style/theme.css" />
+		<link rel="stylesheet" href="style/default.css" />
+		<link rel="stylesheet" href="style/user.css" />
+
+		<script type="module">
+			import { applyInitialTheme } from "/js/theme.js"
+			applyInitialTheme()
+		</script>
+
 		<title>Redirect Page</title>
-		<style>
-			* {
-				margin: 0;
-				padding: 0;
-				box-sizing: border-box;
-			}
-
-			body[data-theme="dark"] {
-				--bg-color: #211f1f;
-				--dot-color: #ffffff;
-
-				--card-color: #1a1919;
-
-				--text-color: #ffffff;
-				--secondary-color: #bbbbbb;
-
-				--spinner-color: #4b8264;
-				--spinner-color-transparent: transparent;
-				--line-color: #8f3d3d;
-			}
-
-			body[data-theme="light"] {
-				--bg-color: #ffffff;
-				--dot-color: #2a2a2a;
-
-				--card-color: #ffffff;
-
-				--text-color: #1a1919;
-				--secondary-color: #555555;
-
-				--spinner-color: #5aa47b;
-				--spinner-color-transparent: transparent;
-				--line-color: #d9534f;
-			}
-
-			body {
-				color: var(--text-color);
-				font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS",
-					sans-serif;
-				background: var(--bg-color);
-
-				display: flex;
-				height: 100vh;
-				align-items: center;
-				justify-content: center;
-				flex-direction: row;
-
-				transition: background 0.3s, color 0.3s;
-
-				z-index: 1;
-			}
-
-			.container {
-				display: flex;
-				flex-direction: column;
-				align-items: center;
-				text-align: center;
-
-				width: 100%;
-				max-width: 600px;
-
-				padding: 40px 30px;
-
-				gap: 25px;
-
-				background: var(--card-color);
-				border-radius: 16px;
-
-				box-shadow: 0 0 25px rgba(0, 0, 0, 0.35);
-				border: 1px solid rgba(255, 255, 255, 0.05);
-
-				backdrop-filter: blur(18px);
-				-webkit-backdrop-filter: blur(18px);
-			}
-
-			.top-row {
-				display: flex;
-				align-items: center;
-				min-height: 10vh;
-			}
-
-			.middle-row {
-				display: flex;
-				flex-direction: column;
-				align-items: center;
-				text-align: center;
-				gap: 10px;
-			}
-
-			.bottom-row {
-				padding-top: 30px;
-				display: flex;
-				align-items: center;
-				gap: 30px;
-				font-size: 14px;
-				white-space: pre-wrap;
-				color: var(--secondary-color);
-				opacity: 0.8;
-			}
-
-			.spinner {
-				height: 120px;
-				width: 120px;
-				border: 8px solid;
-				border-color: var(--spinner-color) var(--spinner-color)
-					var(--spinner-color) var(--spinner-color-transparent);
-				border-radius: 50%;
-			}
-
-			.line {
-				position: absolute;
-				height: 80px;
-				width: 120px;
-				border: 8px solid;
-				border-color: var(--line-color) var(--line-color) var(--line-color)
-					var(--line-color);
-				border-radius: 50%;
-			}
-
-			#hide {
-				opacity: 0;
-			}
-
-			#spin {
-				animation: spin 0.8s ease infinite;
-			}
-
-			#cross-line {
-				animation: collapse-to-cross 1s ease forwards;
-			}
-
-			#add-line {
-				animation: add-line 1s ease forwards;
-			}
-
-			@keyframes spin {
-				to {
-					transform: rotate(360deg);
-				}
-			}
-
-			@keyframes collapse-to-cross {
-				40% {
-					border-color: var(--line-color) transparent var(--line-color)
-						transparent;
-				}
-				100% {
-					height: 0px;
-					border-radius: 6px;
-					border-color: var(--line-color) transparent var(--line-color)
-						transparent;
-					transform: rotate(45deg);
-				}
-			}
-
-			@keyframes add-line {
-				20% {
-					opacity: 1;
-				}
-				40% {
-					border-color: var(--line-color) transparent var(--line-color)
-						transparent;
-				}
-				100% {
-					opacity: 1;
-					height: 0px;
-					border-radius: 6px;
-					border-color: var(--line-color) transparent var(--line-color)
-						transparent;
-					transform: rotate(-45deg);
-				}
-			}
-
-			.bg-pattern {
-				position: fixed;
-				inset: 0;
-				z-index: -1;
-
-				background-image: radial-gradient(
-					var(--dot-color) 1px,
-					transparent 1px
-				);
-				background-size: 20px 20px;
-
-				opacity: 0.25;
-				animation: move-dots 18s linear infinite;
-
-				z-index: 0;
-			}
-
-			.bg-pattern::after {
-				content: "";
-				position: absolute;
-				inset: 0;
-
-				background-image: radial-gradient(
-					var(--dot-color) 1px,
-					transparent 1px
-				);
-				background-size: 28px 28px;
-				opacity: 0.15;
-
-				animation: move-dots-reverse 28s linear infinite;
-			}
-
-			@keyframes move-dots {
-				from {
-					background-position: 0 0;
-				}
-				to {
-					background-position: 200px 200px;
-				}
-			}
-
-			@keyframes move-dots-reverse {
-				from {
-					background-position: 0 0;
-				}
-				to {
-					background-position: -200px -200px;
-				}
-			}
-		</style>
 	</head>
 	<body>
 		<div class="bg-pattern"></div>
@@ -239,70 +26,139 @@
 
 			<div class="middle-row">
 				<h1 id="title">Starting Service</h1>
-				<h3 id="subtitle">You will be Redirected shortly</h3>
+				<h3 id="subtitle">Initializing startup...</h3>
 			</div>
 
 			<div class="bottom-row">
-				<p id="log"></p>
+				<p id="output"></p>
 			</div>
 		</div>
-		<script>
+
+		<button class="theme-toggle" type="button">
+			<svg
+				id="sun"
+				xmlns="http://www.w3.org/2000/svg"
+				width="24"
+				height="24"
+				fill="none"
+				stroke="currentColor"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="1.8"
+				data-attribution="cc0-icons"
+				viewBox="0 0 24 24"
+			>
+				<path
+					d="m4.91 19.052 1.773-1.763M17.317 6.71l1.773-1.762m-.038 14.142-1.763-1.773M6.71 6.683 4.949 4.91M12 22v-2.5m0-15V2m10 10h-2.5m-15 0H2m10 4.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Z"
+				/>
+			</svg>
+			<svg
+				id="moon"
+				xmlns="http://www.w3.org/2000/svg"
+				width="24"
+				height="24"
+				fill="none"
+				stroke="currentColor"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="1.8"
+				data-attribution="cc0-icons"
+				viewBox="0 0 24 24"
+			>
+				<path
+					d="M2.65 13.717c.94 5.44 6.082 9.081 11.482 8.133 3.385-.595 6.07-2.853 7.368-5.795a8.206 8.206 0 0 1-3.863 1.796c-4.5.79-8.784-2.244-9.568-6.777-.668-3.859 1.415-7.56 4.825-9.063a9.888 9.888 0 0 0-2.172.14c-5.4.948-9.014 6.127-8.073 11.566Z"
+				/>
+			</svg>
+		</button>
+
+		<div class="user">
+			<div class="profile"></div>
+		</div>
+
+		<script type="module">
+			import { startWoLProcess } from "/js/wol.js"
+			import { setUser } from "/js/user.js"
+			import { initToggle } from "/js/theme.js"
+
+			const userData = {
+				name: "<%= user.name %>",
+				email: "<%= user.email %>",
+				locale: "<%= user.locale %>",
+			}
+
+			const serviceUrl = "<%= serviceUrl %>"
+			const serviceURL = new URL(serviceUrl)
+
+			const output = document.getElementById("output")
+
+			const title = document.getElementById("title")
+			const subtitle = document.getElementById("subtitle")
+
 			function changeAnimation(id, newId) {
 				const element = document.getElementById(id)
 				if (element) element.id = newId
 			}
 
-			function handleError({
-				host = "Server",
-				message = "Unable to reach the server",
-			} = {}) {
-				const titleText = document.getElementById("title")
-				const subTitleText = document.getElementById("subtitle")
+			function handleError({ host = "Service", msg = "" } = {}) {
+				msg = msg.trim()
+
+				if (msg === "") {
+					msg = `${host} seems to be unreachable`
+				}
 
 				setTimeout(() => {
 					changeAnimation("spin", "cross-line")
 					changeAnimation("hide", "add-line")
 
-					titleText.textContent = "Something went wrong"
-					subTitleText.textContent = `${host} seems to be unreachable`
-				}, 1000)
+					title.textContent = `Something went wrong`
+					subtitle.textContent = msg
+				}, 250)
 			}
 
-			async function startRedirectProcess() {
-				const logEl = document.getElementById("log")
-				const subTitleText = document.getElementById("subtitle")
-
-				logEl.textContent = ""
-
-				const baseText = "You will be Redirected shortly"
-
-				try {
-					console.log("Initializing Startup")
-					const response = await fetch("/data")
-					if (!response.ok) throw new Error(`HTTP error ${response.status}`)
-
-					const data = await response.json()
-					logEl.textContent = data.log || ""
-
-					if (data.error) {
-						handleError({ host: data.host })
-					} else if (data.url) {
-						window.location.href = data.url
-					} else {
-						handleError()
-					}
-				} catch (err) {
-					console.error("Error fetching data:", err)
-					handleError()
-				}
+			function handleSubtitle(msg) {
+				subtitle.textContent = msg
 			}
 
-			const prefersDark = window.matchMedia(
-				"(prefers-color-scheme: light)"
-			).matches
-			document.body.setAttribute("data-theme", prefersDark ? "dark" : "light")
+			function handleOutput(msg) {
+				output.textContent += msg + "\n"
+			}
 
-			window.addEventListener("DOMContentLoaded", startRedirectProcess)
+			initToggle()
+
+			setUser(userData)
+
+			const onload = () => {
+				startWoLProcess({
+					outputHandler: handleOutput,
+					errorHandler: (msg) => {
+						handleError({
+							msg: msg,
+							host: serviceURL.hostname,
+						})
+					},
+					onwsopen: () => {
+						handleSubtitle("Starting process...")
+						handleOutput("WebSocket connected")
+					},
+					onsuccess: (ws, msg) => {
+						if (msg.url !== serviceUrl) {
+							handleOutput()
+							ws.close()
+							handleError({
+								msg: "Service URL was modified",
+							})
+						} else {
+							handleOutput("Service is online! Redirecting...")
+							ws.close()
+							setTimeout(() => {
+								window.location.href = msg.url
+							}, 250)
+						}
+					},
+				})
+			}
+
+			window.addEventListener("DOMContentLoaded", onload)
 		</script>
 	</body>
 </html>
