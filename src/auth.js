@@ -52,8 +52,6 @@ function getOriginalUrl(req) {
 }
 
 function registerOauth() {
-	redirectURL = new URL(ENV.redirectURL)
-
 	passport.use(
 		new OAuth2Strategy(
 			{
@@ -196,15 +194,22 @@ function registerFakeAuth() {
 	})
 
 	router.get("/", async (req, res, next) => {
+		const originalUrl = getOriginalUrl(req)
+
+		let originalURL
+		try {
+			originalURL = new URL(originalUrl)
+		} catch (err) {
+			logger.error("Error parsing service URL: ", originalUrl)
+		}
+
 		if (!req.isAuthenticated()) {
 			req.session.user = {
-				username: "user",
+				username: originalURL.hostname,
 				email: "",
 				locale: "",
 			}
 		}
-
-		const originalUrl = getOriginalUrl(req)
 
 		const sessionID = uuidv4()
 
@@ -215,7 +220,10 @@ function registerFakeAuth() {
 			maxAge: 1000 * 60 * 60,
 		})
 
-		await WriteToCache(`service=${sessionID}`, originalUrl)
+		await WriteToCache(
+			`${redirectURL?.origin || ""}/service=${sessionID}`,
+			originalUrl
+		)
 
 		next()
 	})
@@ -232,6 +240,12 @@ function registerFakeAuth() {
 }
 
 export function Router() {
+	try {
+		redirectURL = new URL(ENV.redirectURL)
+	} catch (err) {
+		logger.error("Error parsing redirect URL: ", ENV.redirectURL)
+	}
+
 	if (ENV.useOauth) {
 		registerOauth()
 	} else {
