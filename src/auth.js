@@ -196,7 +196,7 @@ function registerFakeAuth() {
 	})
 
 	router.get("/", async (req, res, next) => {
-		if (!req.isAuthenticated) {
+		if (!req.isAuthenticated()) {
 			req.session.user = {
 				username: "user",
 				email: "",
