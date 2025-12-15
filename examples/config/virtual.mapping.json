@@ -1,6 +1,6 @@
 {
 	"hosts": {
-		"pve": {
+		"hypervisor": {
 			"ip": "192.168.1.1",
 			"mac": "XX:XX:XX:XX:XX:XX",
 			"startupTime": 40
@@ -17,11 +17,11 @@
 		}
 	},
 	"routes": {
-		"pve-lxc": {
-			"route": ["pve", "lxc"]
+		"hypervisor-lxc": {
+			"route": ["hypervisor", "lxc"]
 		}
 	},
 	"records": {
-		"*.mydomain.com": "pve-lxc"
+		"*.mydomain.com": "hypervisor-lxc"
 	}
 }

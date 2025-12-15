@@ -1,91 +1,158 @@
-# WoL Redirect
+<h1 align="center">WoL Redirect</h1>
 
-WoL Redirect is a Docker Container with graphical interface, which allows users to wake up their services.
-Integrates with all of the WoL Containers.
+<p align="center">
+🖥️ On-demand service wake-up · Web UI · ⚙️ flexible and configurable · Multi-Environment
+</p>
 
-_Well, except for meteorite_
+<div align="center">
+  <a href="https://github.com/codeshelldev/wol-redirect/releases">
+    <img 
+        src="https://img.shields.io/github/v/release/codeshelldev/wol-redirect?sort=semver&logo=github&label=Release" 
+        alt="GitHub release"
+    >
+  </a>
+  <a href="https://github.com/codeshelldev/wol-redirect/stargazers">
+    <img 
+        src="https://img.shields.io/github/stars/codeshelldev/wol-redirect?style=flat&logo=github&label=Stars" 
+        alt="GitHub stars"
+    >
+  </a>
+    <a href="https://github.com/codeshelldev/wol-redirect/pkgs/container/wol-redirect">
+    <img 
+        src="https://ghcr-badge.egpl.dev/codeshelldev/wol-redirect/size?color=%2344cc11&tag=latest&label=Image+Size&trim="
+        alt="Docker image size"
+    >
+  </a>
+  <a href="https://github.com/codeshelldev/wol-redirect/pkgs/container/wol-redirect">
+    <img 
+        src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fghcr-badge.elias.eu.org%2Fapi%2Fcodeshelldev%2Fwol-dockerized%2Fwol-dockerized&query=downloadCount&label=Downloads&color=2344cc11"
+        alt="Docker image Pulls"
+    >
+  </a>
+  <a href="./LICENSE">
+    <img 
+        src="https://img.shields.io/badge/License-MIT-green.svg"
+        alt="License: MIT"
+    >
+  </a>
+</div>
+
+---
 
 ## Installation
 
-Get the latest `docker-compose.yaml` file:
+Download the latest `docker-compose.yaml`:
 
 ```yaml
 {{{ #://docker-compose.yaml }}}
 ```
 
+Start the container:
+
 ```bash
 docker compose up -d
 ```
 
-### Reverse Proxy
+## Reverse Proxy
 
-In this example we'll be using traefik:
+The following example uses **Traefik** as a reverse proxy:
 
 ```yaml
 {{{ #://examples/traefik.docker-compose.yaml }}}
 ```
 
-Let's use jellyfin for example
+Example service configuration using **Jellyfin**:
 
 ```yaml
 {{{ #://examples/jellyfin.yaml }}}
 ```
 
-### Configuration
+## Configuration
+
+Basic service-to-host mappings:
 
 ```json
 {{{ #://examples/config/mapping.json }}}
 ```
 
-`.env`
+Environment variables:
 
 ```dotenv
 {{{ #://examples/config/config.env }}}
 ```
 
-#### PVE (VMs + LXCs)
+## Advanced Setups
 
-If you are trying to wakeup a host running PVE, you will probably want to wakeup LXCs or VMs too.
-Sadly LXCs (and VMs) don't have `Wake-on-LAN` functionalities.
-For that you will need [WoL PVE](https://github.com/codeshelldev/wol-pve)
+WoL Redirect supports two main scenarios depending on how your services are hosted.
 
-```json
-{{{ #://examples/config/mapping-pve.json }}}
-```
+## Virtualized Hosts (VMs, LXCs, Hypervisors)
 
-#### Docker
+If your services run inside virtual machines or containers managed by a hypervisor (for example Proxmox VE, ..., or similar platforms), you may want to wake up the physical host **and** start specific VMs or LXCs.
 
-If you are running docker on your resource-hungry server, you might want to start docker-containers only if needed.
-For this to work you will need [WoL Dockerized](https://github.com/codeshelldev/wol-dockerized)
+Since VMs and LXCs do not support Wake-on-LAN directly, an external helper is required.
 
-```json
-{{{ #://examples/config/mapping-docker.json }}}
-```
+This setup requires an additional helper to be installed on the hypervisor: [**WoL VE**](https://github.com/codeshelldev/wol-ve)
 
-#### Or both
+Example mapping configuration:
 
 ```json
-{{{ #://examples/config/mapping-pve-docker.json }}}
+{{{ #://examples/config/virtual.mapping.json }}}
 ```
 
-_You will need both [WoL PVE](https://github.com/codeshelldev/wol-pve) and [WoL Dockerized](https://github.com/codeshelldev/wol-dockerized)_
+This approach is applicable to:
+
+- Proxmox VE
+- Other hypervisors with API-controlled VM/container startup
+- Mixed virtualization environments
+
+## Docker Hosts (Non-Virtualized)
+
+If Docker is running directly on a physical server, you may want to:
+
+- Wake up the server only when needed
+- Start specific Docker containers on demand
+
+For this use case, use [**WoL Dockerized**](https://github.com/codeshelldev/wol-dockerized).
+
+Example mapping configuration:
+
+```json
+{{{ #://examples/config/docker.mapping.json }}}
+```
+
+## Combined Setup (Virtualization + Docker)
+
+If your environment uses both virtualization and Docker (for example Docker running inside VMs, or mixed workloads), you can combine both approaches.
+
+Example mapping configuration:
+
+```json
+{{{ #://examples/config/virtual-docker.mapping.json }}}
+```
+
+This setup requires:
+
+- [WoL VE](https://github.com/codeshelldev/wol-ve)
+- [WoL Dockerized](https://github.com/codeshelldev/wol-dockerized)
 
 ## Usage
 
-Use a Reverse Proxy to redirect you from a service `https://jellyfin.mydomain.com` on another machine to `https://wol-red.mydomain.com`,
-WoL Redirect will use the `config.json` to get the host of the requested service.
+Configure your reverse proxy to forward requests from a service domain (e.g. `https://jellyfin.mydomain.com`) to `https://wol-red.mydomain.com`.
+
+WoL Redirect inspects the incoming request, matches it against the configuration, and:
+
+1. Wakes up the target host if necessary
+2. Starts the required VM, container, or service
+3. Redirects traffic once the service is available
 
 ## Contributing
 
-Have feedback, new ideas or found a bug? Feel free to open up an issue or to start a Pull Request!
-
-_But remember we are all volunteers, so be kind and respectful_
+Have feedback, ideas, or found a bug? Open an issue or submit a pull request.
 
 ## Supporting
 
-Like this project and want to support?
-⭐️ this Repository to let others know about this Project.
+If you find this project useful, consider starring ⭐️ the repository to help others discover it.
 
 ## License
 
-[MIT](https://choosealicense.com/licenses/mit/)
+This project is licensed under the [MIT License](./LICENSE)
