@@ -208,7 +208,7 @@ function registerFakeAuth() {
 
 		const sessionID = uuidv4()
 
-		res.cookie("session_id", req.query.session_id, {
+		res.cookie("session_id", sessionID, {
 			httpOnly: true,
 			secure: true,
 			sameSite: "lax",
