@@ -1,17 +1,13 @@
 {
 	"hosts": {
 		"docker-server": {
-			"ip": "192.168.1.1",
-			"mac": "XX:XX:XX:XX:XX:XX",
-			"startupTime": 10
+			"ip": "192.168.5.10",
+			"docker": true
 		}
 	},
 	"routes": {
 		"docker": {
-			"route": ["docker-server"],
-			"attributes": {
-				"wakeDocker": true
-			}
+			"route": ["docker-server"]
 		}
 	},
 	"records": {

@@ -1,5 +1,4 @@
 services:
-  # ...
   wolred:
     container_name: wol-redirect
     image: ghcr.io/codeshelldev/wol-redirect:latest
@@ -9,12 +8,13 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.wolred-https.rule=Host(`wol-redirect.mydomain.com`)
+      - traefik.http.routers.wolred-https.priority=10
       - traefik.http.routers.wolred-https.entrypoints=websecure
       - traefik.http.routers.wolred-https.tls=true
       - traefik.http.routers.wolred-https.tls.certresolver=cloudflare
       - traefik.http.routers.wolred-https.service=wolred-svc
 
-      - traefik.http.services.wolred-svc.loadbalancer.server.port=80
+      - traefik.http.services.wolred-svc.loadbalancer.server.port=6789
       - traefik.docker.network=proxy
     volumes:
       - ./config:/app/config:ro

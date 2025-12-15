@@ -8,14 +8,12 @@
 		"lxc": {
 			"ip": "192.168.1.1",
 			"id": "100",
-			"startupTime": 10,
-			"isVirtual": true
+			"startupTime": 10
 		},
-		"ubuntu-vm": {
+		"vm": {
 			"ip": "192.168.1.1",
-			"id": "100",
-			"startupTime": 10,
-			"isVirtual": true
+			"id": "200",
+			"startupTime": 10
 		}
 	},
 	"routes": {

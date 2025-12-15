@@ -17,8 +17,6 @@ http:
       loadBalancer:
         serversTransport: transport
         healthCheck:
-          # host your jellyfin instance with an additional port 12345, which is used for healthchecks
-          # change this to port 80 / 443 if you are not hosting the docker host on top of PVE with wol-pve
           port: 12345
           interval: 5s
           timeout: 3s

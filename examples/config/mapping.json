@@ -3,7 +3,7 @@
 		"server-1": {
 			"ip": "192.168.1.1",
 			"mac": "XX:XX:XX:XX:XX:XX",
-			"startupTime": 40
+			"startupTime": 60
 		}
 	},
 	"routes": {
