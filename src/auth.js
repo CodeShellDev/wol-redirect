@@ -213,19 +213,25 @@ function registerFakeAuth() {
 			}
 		}
 
-		const sessionID = uuidv4()
+		if (
+			(redirectURL && req.hostname == redirectURL?.hostname) ||
+			!redirectURL
+		) {
+			const sessionID = uuidv4()
 
-		res.cookie("session_id", sessionID, {
-			httpOnly: true,
-			secure: true,
-			sameSite: "lax",
-			maxAge: 1000 * 60 * 60,
-		})
+			res.cookie("session_id", sessionID, {
+				httpOnly: true,
+				secure: true,
+				sameSite: "lax",
+				maxAge: 1000 * 60 * 60,
+			})
 
-		await WriteToCache(
-			`${redirectURL?.origin || ""}/service=${sessionID}`,
-			originalUrl
-		)
+			await WriteToCache(`service=${sessionID}`, originalUrl)
+		}
+
+		if (redirectURL && req.hostname !== redirectURL?.hostname) {
+			return res.redirect(`${redirectURL.origin}`)
+		}
 
 		next()
 	})
