@@ -52,6 +52,8 @@ function getOriginalUrl(req) {
 }
 
 function registerOauth() {
+	if (!redirectURL) return
+
 	passport.use(
 		new OAuth2Strategy(
 			{
@@ -242,11 +244,13 @@ function registerFakeAuth() {
 export function Router() {
 	try {
 		redirectURL = new URL(ENV.redirectURL)
-	} catch (err) {
-		logger.error("Error parsing redirect URL: ", ENV.redirectURL)
-	}
+	} catch {}
 
 	if (ENV.useOauth) {
+		if (!redirectURL) {
+			logger.error("Error parsing redirect URL: ", ENV.redirectURL)
+		}
+
 		registerOauth()
 	} else {
 		registerFakeAuth()
