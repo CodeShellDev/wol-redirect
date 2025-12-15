@@ -1,0 +1,29 @@
+{
+	"hosts": {
+		"hypervisor": {
+			"ip": "192.168.1.1",
+			"mac": "XX:XX:XX:XX:XX:XX",
+			"startupTime": 40
+		},
+		"lxc": {
+			"ip": "192.168.1.1",
+			"id": "100",
+			"virtIP": "10.0.0.10",
+			"startupTime": 10
+		},
+		"docker-server": {
+			"ip": "10.0.0.10",
+			"docker": {
+				"queryPattern": "{{HOSTNAME}}"
+			}
+		}
+	},
+	"routes": {
+		"hypervisor-lxc-docker": {
+			"route": ["hypervisor", "lxc", "docker-server"]
+		}
+	},
+	"records": {
+		"*.mydomain.com": "hypervisor-lxc-docker"
+	}
+}

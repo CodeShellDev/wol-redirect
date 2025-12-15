@@ -1,17 +1,19 @@
 {
 	"hosts": {
 		"docker-server": {
-			"ip": "192.168.5.10",
-			"docker": true
+			"ip": "192.168.1.10",
+			"docker": {
+				"queryPattern": "{{HOSTNAME}}"
+			}
 		}
 	},
 	"routes": {
-		"docker": {
+		"docker-only": {
 			"route": ["docker-server"]
 		}
 	},
 	"records": {
-		"jellyfin.mydomain.com": "docker",
-		"*.mydomain.com": "docker"
+		"jellyfin.mydomain.com": "docker-only",
+		"*.mydomain.com": "docker-only"
 	}
 }

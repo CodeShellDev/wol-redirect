@@ -5,23 +5,19 @@
 			"mac": "XX:XX:XX:XX:XX:XX",
 			"startupTime": 40
 		},
-		"lxc": {
-			"ip": "192.168.1.1",
-			"id": "100",
-			"startupTime": 10
-		},
 		"vm": {
 			"ip": "192.168.1.1",
 			"id": "200",
-			"startupTime": 10
+			"virtIP": "192.168.1.20",
+			"startupTime": 15
 		}
 	},
 	"routes": {
-		"hypervisor-lxc": {
-			"route": ["hypervisor", "lxc"]
+		"hypervisor-vm": {
+			"route": ["hypervisor", "vm"]
 		}
 	},
 	"records": {
-		"*.mydomain.com": "hypervisor-lxc"
+		"*.mydomain.com": "hypervisor-vm"
 	}
 }
