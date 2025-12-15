@@ -247,13 +247,13 @@ The `hosts` section defines all machines, VMs, containers, or Docker services th
 | -------------- | ------- | ------------------------ | ------------------------------------------------------------------------------------------------------- |
 | `ip`           | string  | Yes                      | The IP address of the host. Used for all types; typically used for ping checks and default connections. |
 | `mac`          | string  | Required for PHYSICAL    | MAC address for Wake-on-LAN. Only needed for physical hosts.                                            |
-| `addr`         | string  | Optional, PHYSICAL only  | The network address used to send WoL packets, if different from `ip` or subnet.                         |
+| `addr`         | string  | Optional, PHYSICAL only  | The network address used to send WoL packets, if different from `ip`.                                   |
 | `id`           | string  | Required for VIRTUAL     | Identifier for virtual machines or LXCs.                                                                |
-| `virtIP`       | string  | Optional                 | IP of the VM/LXC for the wake API. Defaults to `ip`.                                                    |
-| `startupTime`  | number  | Optional                 | Seconds to wait after starting before forwarding traffic.                                               |
+| `virtIP`       | string  | Optional                 | IP of the VM/LXC. Defaults to `ip`.                                                                     |
+| `startupTime`  | number  | Optional                 | Seconds to wait after starting before pinging IP.                                                       |
 | `url`          | string  | Optional                 | Override the default helper URL for this host.                                                          |
-| `docker`       | object  | Required for DOCKER type | Docker-specific settings. See below.                                                                    |
 | `docker: true` | boolean | Optional                 | Can be set to `true` to mark a host as DOCKER type without additional settings.                         |
+| `docker`       | object  | Required for DOCKER type | Docker-specific settings. See below.                                                                    |
 
 ### Docker Sub-Object
 
@@ -272,9 +272,8 @@ The `hosts` section defines all machines, VMs, containers, or Docker services th
 
 - `addr` allows sending WoL packets to a different network address than `ip`, useful for hosts behind different subnets or NAT.
 - `url` can override default helper URLs for PHYSICAL, VIRTUAL, or DOCKER hosts.
-- `virtIP` can override the IP used by virtual helper services.
+- `virtIP` can override the IP used for pings.
 - `docker.queryPattern` can override the global `ENV.woldQueryPattern`.
-- `startupTime` allows per-host delay before forwarding traffic.
 - The execution order of hosts in a route determines the startup sequence.
 
 ## Advanced Setups
