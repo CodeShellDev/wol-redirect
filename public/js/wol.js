@@ -7,8 +7,13 @@ export async function startWoLProcess({
 		outputHandler("WebSocket connection failed")
 		errorHandler()
 	},
-	onwsclose = () => {
-		outputHandler("WebSocket closed")
+	onwsclose = (success) => {
+		if (success) {
+			outputHandler("WebSocket closed")
+		} else {
+			outputHandler("WebSocket closed unexpectedly")
+			errorHandler("Process ended early")
+		}
 	},
 	onerror = (ws, msg) => {
 		outputHandler("Failed to start service")
@@ -45,6 +50,8 @@ export async function startWoLProcess({
 			`${protocol}://${location.host}/ws?client_id=${clientID}`
 		)
 
+		let success = false
+
 		ws.onopen = onwsopen
 
 		ws.onmessage = (event) => {
@@ -55,6 +62,7 @@ export async function startWoLProcess({
 			}
 
 			if (!msg.error && msg.url) {
+				success = true
 				onsuccess(ws, msg)
 			}
 
@@ -65,7 +73,9 @@ export async function startWoLProcess({
 
 		ws.onerror = onwserror
 
-		ws.onclose = onwsclose
+		ws.onclose = () => {
+			onwsclose(success)
+		}
 	} catch (err) {
 		outputHandler(`Failed to start process: ${err.message}`)
 		errorHandler(err.message)
