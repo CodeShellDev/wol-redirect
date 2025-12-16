@@ -161,7 +161,17 @@
 				})
 			}
 
-			window.addEventListener("DOMContentLoaded", onload)
+			const waitBeforeProcess = 2 * 1000
+
+			window.addEventListener("DOMContentLoaded", () => {
+				const timer = setTimeout(() => {
+					if (!document.hidden) {
+						onload()
+					}
+				}, waitBeforeProcess)
+
+				window.addEventListener("beforeunload", () => clearTimeout(timer))
+			})
 		</script>
 	</body>
 </html>
