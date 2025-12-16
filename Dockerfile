@@ -1,8 +1,11 @@
 FROM node:alpine
 
-WORKDIR /app
+ARG IMAGE_TAG
+ENV IMAGE_TAG=$IMAGE_TAG
 
 ENV NODE_ENV=production
+
+WORKDIR /app
 
 COPY . .
 

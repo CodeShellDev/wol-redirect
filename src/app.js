@@ -31,13 +31,14 @@ app.use((req, res, next) => {
 })
 
 log.Init()
+
+log.logger.info(`Running ${process.env.IMAGE_TAG} Image`)
+
 env.Load()
 
 if (log.logger.level != env.ENV.logLevel) {
 	log.Init(env.ENV.logLevel)
 }
-
-log.logger.info(`Running ${process.env.IMAGE_TAG} Image`)
 
 log.Log()
 
