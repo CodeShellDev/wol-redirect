@@ -115,7 +115,7 @@ The `hosts` section defines all machines, VMs, containers, or Docker services th
 
 WoL Redirect supports two main scenarios depending on how your services are hosted.
 
-## Virtualized Hosts (VMs, LXCs, Hypervisors)
+## Virtualized Hosts (VMs, LXCs)
 
 If your services run inside virtual machines or containers managed by a hypervisor (for example Proxmox VE, ..., or similar platforms), you may want to wake up the physical host **and** start specific VMs or LXCs.
 
