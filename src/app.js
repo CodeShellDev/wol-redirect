@@ -48,6 +48,23 @@ const rootRouter = Router()
 rootRouter.use("/", auth())
 rootRouter.use("/", wol())
 
+app.use((req, res, next) => {
+	const origRedirect = res.redirect.bind(res)
+	res.redirect = function redirectOverride(...args) {
+		let target = args.pop()
+
+		if (typeof target === "string" && target.startsWith("/")) {
+			args.push(env.ENV.basePath + target)
+		} else {
+			args.push(target)
+		}
+
+		return origRedirect(...args)
+	}
+
+	next()
+})
+
 app.use(env.ENV.basePath, rootRouter)
 
 app.use((err, req, res, next) => {
