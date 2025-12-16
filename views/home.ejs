@@ -11,7 +11,7 @@
 		<link rel="stylesheet" href="style/user.css" />
 
 		<script type="module">
-			import { applyInitialTheme } from "/js/theme.js"
+			import { applyInitialTheme } from "./js/theme.js"
 			applyInitialTheme()
 		</script>
 
@@ -78,9 +78,9 @@
 		</div>
 
 		<script type="module">
-			import { startWoLProcess } from "js/wol.js"
-			import { setUser } from "js/user.js"
-			import { initToggle } from "js/theme.js"
+			import { startWoLProcess } from "./js/wol.js"
+			import { setUser } from "./js/user.js"
+			import { initToggle } from "./js/theme.js"
 
 			const userData = {
 				name: "<%= user.name %>",
