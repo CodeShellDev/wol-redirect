@@ -10,9 +10,23 @@ import { Router as auth } from "./auth.js"
 import { Router as wol } from "./wol.js"
 import { Attach } from "./wss.js"
 
+log.Init()
+
+log.logger.info(`Running ${process.env.IMAGE_TAG} Image`)
+
+env.Load()
+
+if (log.logger.level != env.ENV.logLevel) {
+	log.Init(env.ENV.logLevel)
+}
+
+log.Log()
+
+await Init()
+
 const app = express()
 
-app.use(express.static("public"))
+app.use(env.ENV.basePath, express.static("public"))
 
 app.set("view engine", "ejs")
 app.set("trust proxy", true)
@@ -29,20 +43,6 @@ app.use((req, res, next) => {
 	log.logger.info(`${req.method} ${url.pathname} ${url.search}`)
 	next()
 })
-
-log.Init()
-
-log.logger.info(`Running ${process.env.IMAGE_TAG} Image`)
-
-env.Load()
-
-if (log.logger.level != env.ENV.logLevel) {
-	log.Init(env.ENV.logLevel)
-}
-
-log.Log()
-
-await Init()
 
 app.use(cookieParser())
 
