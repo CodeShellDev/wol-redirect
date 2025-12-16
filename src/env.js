@@ -61,7 +61,7 @@ export function Load() {
 	}
 
 	if (basePath) {
-		ENV.basePath = ENV.appURL.pathname.replace(/\/$/, "")
+		ENV.basePath = basePath.replace(/\/$/, "")
 	}
 
 	ENV.redisHost = process.env.REDIS_HOST || ENV.redisHost
