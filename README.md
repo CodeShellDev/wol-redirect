@@ -62,7 +62,7 @@ services:
     networks:
       - network
     ports:
-      - "80:80"
+      - "6789:6789"
     volumes:
       - ./config:/app/config:ro
     depends_on:
