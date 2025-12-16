@@ -248,17 +248,25 @@ function registerFakeAuth() {
 }
 
 export function Router() {
-	try {
-		redirectURL = new URL(ENV.redirectURL)
-	} catch {}
-
 	if (ENV.useOauth) {
+		if (ENV.redirectURL) {
+			try {
+				redirectURL = new URL(ENV.redirectURL)
+			} catch {}
+		}
+
 		if (!redirectURL) {
 			logger.error("Error parsing redirect URL: ", ENV.redirectURL)
 		}
 
 		registerOauth()
 	} else {
+		if (ENV.appURL) {
+			try {
+				redirectURL = new URL(ENV.appURL)
+			} catch {}
+		}
+
 		registerFakeAuth()
 	}
 

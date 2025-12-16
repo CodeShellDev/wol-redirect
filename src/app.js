@@ -1,4 +1,4 @@
-import express from "express"
+import express, { Router } from "express"
 import { createServer } from "http"
 import cookieParser from "cookie-parser"
 
@@ -43,8 +43,12 @@ await Init()
 
 app.use(cookieParser())
 
-app.use("/", auth())
-app.use("/", wol())
+const rootRouter = Router()
+
+rootRouter.use("/", auth())
+rootRouter.use("/", wol())
+
+app.use(env.ENV.basePath, rootRouter)
 
 app.use((err, req, res, next) => {
 	log.logger.error(err)

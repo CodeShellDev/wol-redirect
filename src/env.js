@@ -7,6 +7,9 @@ export const ENV = {
 	port: "6789",
 	logLevel: "info",
 
+	appURL: "",
+	basePath: "",
+
 	exposeLogs: true,
 	useOauth: true,
 
@@ -45,6 +48,21 @@ export function Load() {
 
 	ENV.port = process.env.PORT || ENV.port
 	ENV.logLevel = process.env.LOG_LEVEL || ENV.logLevel
+
+	const appUrl = process.env.APP_URL || ""
+
+	let basePath = process.env.BASE_PATH || ""
+
+	if (appUrl && !basePath) {
+		try {
+			const appURL = new URL(appUrl)
+			basePath = appURL.pathname
+		} catch {}
+	}
+
+	if (basePath) {
+		ENV.basePath = ENV.appURL.pathname.replace(/\/$/, "")
+	}
 
 	ENV.redisHost = process.env.REDIS_HOST || ENV.redisHost
 	ENV.redisPort = process.env.REDIS_PORT || ENV.redisPort
