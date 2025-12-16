@@ -151,6 +151,16 @@ Environment variables:
 # Core Application Settings
 ############################
 
+# Public URL where WoL Redirect is accessible
+# Used for absolute redirects, links, and OAuth flows
+# Example: https://wol-red.mydomain.com
+APP_URL=
+
+# Base path the application is served from
+# Leave empty or "/" if served from the root
+# Example: /wol or /apps/wol
+BASE_PATH=/
+
 # Path to the service mapping configuration file
 CONFIG_PATH=/app/config/mapping.json
 
@@ -273,7 +283,7 @@ The `hosts` section defines all machines, VMs, containers, or Docker services th
 
 WoL Redirect supports two main scenarios depending on how your services are hosted.
 
-## Virtualized Hosts (VMs, LXCs, Hypervisors)
+## Virtualized Hosts (VMs, LXCs)
 
 If your services run inside virtual machines or containers managed by a hypervisor (for example Proxmox VE, ..., or similar platforms), you may want to wake up the physical host **and** start specific VMs or LXCs.
 
