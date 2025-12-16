@@ -28,7 +28,7 @@
 
 			<div class="middle-row">
 				<h1 id="title">Starting Service</h1>
-				<h3 id="subtitle">Initializing startup...</h3>
+				<h3 id="subtitle">Waiting before initializing process</h3>
 			</div>
 
 			<div class="bottom-row">
@@ -130,6 +130,7 @@
 			setUser(userData)
 
 			const onload = () => {
+				handleOutput("Initiliazing process...")
 				startWoLProcess({
 					outputHandler: handleOutput,
 					errorHandler: (msg) => {
