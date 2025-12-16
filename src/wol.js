@@ -460,6 +460,7 @@ router.get("/", async (req, res, next) => {
 			email: req.user.email,
 		},
 		serviceUrl: serviceUrl,
+		basePath: ENV.basePath,
 	})
 })
 

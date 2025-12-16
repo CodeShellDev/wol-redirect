@@ -4,6 +4,8 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+		<base href="<%= basePath %>/" />
+
 		<link rel="stylesheet" href="style/theme.css" />
 		<link rel="stylesheet" href="style/default.css" />
 		<link rel="stylesheet" href="style/user.css" />
@@ -76,9 +78,9 @@
 		</div>
 
 		<script type="module">
-			import { startWoLProcess } from "/js/wol.js"
-			import { setUser } from "/js/user.js"
-			import { initToggle } from "/js/theme.js"
+			import { startWoLProcess } from "js/wol.js"
+			import { setUser } from "js/user.js"
+			import { initToggle } from "js/theme.js"
 
 			const userData = {
 				name: "<%= user.name %>",
@@ -155,7 +157,7 @@
 							}, 250)
 						}
 					},
-					endpoint: `${window.location.origin}/start`,
+					endpoint: `${document.baseURI}/start`,
 				})
 			}
 
