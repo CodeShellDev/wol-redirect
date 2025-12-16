@@ -158,16 +158,22 @@ function getDataFromHost(host, serviceUrl) {
 				return null
 			}
 
-			const queryPattern = host.docker.queryPattern || ENV.woldQueryPattern
-			const context = {
-				HOST: serviceURL.host,
-				HOSTNAME: serviceURL.hostname,
-				PORT: serviceURL.port || "",
-				PROTOCOL: serviceURL.protocol,
-				PATH: serviceURL.pathname,
-			}
+			let query = ""
 
-			const query = buildQuery(queryPattern, context)
+			if (host.docker?.query) {
+				query = host.docker.query
+			} else {
+				const queryPattern = host.docker.queryPattern || ENV.woldQueryPattern
+				const context = {
+					HOST: serviceURL.host,
+					HOSTNAME: serviceURL.hostname,
+					PORT: serviceURL.port || "",
+					PROTOCOL: serviceURL.protocol,
+					PATH: serviceURL.pathname,
+				}
+
+				query = buildQuery(queryPattern, context)
+			}
 
 			return {
 				url: woldUrl,
