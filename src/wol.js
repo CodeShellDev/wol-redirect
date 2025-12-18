@@ -309,11 +309,7 @@ async function waitForHostUp(url, options = {}) {
 			},
 		})
 
-		if (res == null) {
-			continue
-		}
-
-		if (res.ok && !res.headers.get("X-Redirect-Service")) {
+		if (res && res?.ok && !res.headers.get("X-Redirect-Service")) {
 			return true
 		}
 
@@ -400,6 +396,8 @@ async function startProcessing(req, res) {
 	err = wolResult.err
 
 	errorClient(ws, err)
+
+	logger.debug("Waiting for service to come online...")
 
 	const isReady = await waitForHostUp(serviceURL)
 
