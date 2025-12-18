@@ -218,7 +218,7 @@ async function trySendWoLPackets(client, hosts, serviceUrl) {
 		const response = await request.post(targetUrl, payload)
 
 		if (!response?.ok) {
-			logger.error(`${targetUrl} returned ${response.statusText}`)
+			logger.error(`${targetUrl} returned ${response?.statusText || "nothing"}`)
 			err = true
 			break
 		}
