@@ -39,10 +39,6 @@
 
 ---
 
-## Showcase
-
-<iframe src="screenshots/banner.html" width="100%" height="300" style="border:none;"></iframe>
-
 ## Installation
 
 Download the latest `docker-compose.yaml`:
