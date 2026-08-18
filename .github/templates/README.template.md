@@ -25,7 +25,7 @@
   </a>
   <a href="https://github.com/codeshelldev/wol-redirect/pkgs/container/wol-redirect">
     <img 
-        src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fghcr-badge.elias.eu.org%2Fapi%2Fcodeshelldev%2Fwol-dockerized%2Fwol-dockerized&query=downloadCount&label=Downloads&color=2344cc11"
+        src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fghcr-badge.elias.eu.org%2Fapi%2Fcodeshelldev%2Fwol-redirect%2Fwol-redirect&query=downloadCount&label=Downloads&color=2344cc11"
         alt="Docker image Pulls"
     >
   </a>
